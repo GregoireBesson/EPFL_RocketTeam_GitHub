@@ -141,6 +141,8 @@ void setup()
   Serial.println(temp);
   #endif
   
+  digitalWrite(led,HIGH);
+  
   //request for the first mag measurement
   I2CwriteByte(MAG_ADDRESS,0x0A,0x01);
 
@@ -155,6 +157,7 @@ void loop()
   while(millis()-last<period);
   last = millis();
   // Stop logging and switch off the LED when button is pushed
+  
   if(!digitalRead(button)){
     digitalWrite(led,LOW);
     myFile.println("STOP");
@@ -210,7 +213,7 @@ void loop()
   String dataStringSD = String(millis()) +','+'\t'+ String(ax) +','+'\t'+ String(ay) +','+'\t'+ String(az) +','+'\t'+ String(gx) +','+'\t'+ String(gy) +','+'\t'+ String(gz) +','+'\t'+ String(mx) +','+'\t'+ String(my) +','+'\t'+ String(mz) +','+'\t'+ String(temperature) +','+'\t'+ String(pressure) +','+'\t'+ String(altitude) +',' ;
   myFile.println(dataStringSD);
 
-  if (abs((float)ay/208.77) > 5)Serial.print('1');
+  if (abs((float)ay/208.77) > 20)Serial.print('1');
   else Serial.print('0');
   
   //String dataStringArduino= 'a'+String(ay)+'h'+String(altitude);
