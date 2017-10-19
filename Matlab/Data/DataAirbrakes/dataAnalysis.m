@@ -79,6 +79,9 @@ n = 10;
 [b,a] = butter(n,fc/(fs/2));
 altFiltered = filter(b,a,alt);
 
+tmp = trapz(ay-9.81);
+%speed = tmp(0:end-1).*(timeSec(2:end)-timeSec(1:end-1));
+%plot (speed)
 speed = (altFiltered(2:end)-altFiltered(1:end-1))./(timeSec(2:end)-timeSec(1:end-1));
 
 %% Plots of temp and pressure and altitude
@@ -133,8 +136,31 @@ end
 set(gca,'fontsize', 16);
 
 %% Plots of magnetometers on three axis
-
 figure(2)
+scatter3(mx, my, mz,'.');
+hold on
+axis equal
+[Center,Radius] = sphereFit([mx my mz])
+[x,y,z] = sphere(50);
+x = x*Radius + Center(1);
+y = y*Radius + Center(2);
+z = z*Radius + Center(3);
+lightGrey = 0.8*[1 1 1]; % It looks better if the lines are lighter
+surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey)
+
+mx = mx-Center(1);
+my = my-Center(2);
+mz = mz-Center(3);
+
+scatter3(mx, my, mz,'.','r');
+[x,y,z] = sphere(50);
+x = x*Radius;
+y = y*Radius;
+z = z*Radius;
+lightGrey = 0.8*[0 1 0]; % It looks better if the lines are lighter
+surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey)
+
+figure(3)
 subplot(3,1,1)
 plot(timeMillis,mx,'Linewidth',1.5)
 ylabel('m_x [?]')
@@ -183,7 +209,7 @@ set(gca,'fontsize', 16);
 
 %% Plots of gyro on three axis
 
-figure(3)
+figure(4)
 subplot(3,1,1)
 plot(timeMillis,gx,'Linewidth',1.5)
 ylabel('g_x [?]')
@@ -232,7 +258,7 @@ set(gca,'fontsize', 16);
 
 %% Plots of acceleration on three axis
 
-figure(4)
+figure(5)
 subplot(3,1,1)
 plot(timeMillis,axG,'Linewidth',1.5)
 ylabel('a_x [g]')
@@ -281,7 +307,7 @@ set(gca,'fontsize', 16);
 
 %% Relevant Plots
 
-figure(5)
+figure(6)
 subplot(4,1,1)
 plot(timeMillis,ayG,'Linewidth',1.5)
 ylabel('a_y [g]')
