@@ -68,7 +68,7 @@ if (firstRun)
 end
 
 seaLevelhPA = 1013.25;
-alt = 44330*(1-((press/100)/seaLevelhPA).^(0.1903));
+alt = 44330*(1-((press)/seaLevelhPA).^(0.1903));
 alt = alt - alt(1);
 
 % cut-off frequency
@@ -140,7 +140,7 @@ figure(2)
 scatter3(mx, my, mz,'.');
 hold on
 axis equal
-[Center,Radius] = sphereFit([mx my mz])
+[Center,Radius] = sphereFit([mx my mz]);
 [x,y,z] = sphere(50);
 x = x*Radius + Center(1);
 y = y*Radius + Center(2);
@@ -338,7 +338,7 @@ end
 set(gca,'fontsize', 16);
 
 subplot(4,1,3)
-plot(timeMillis,altFiltered,'Linewidth',1.5)
+plot(timeMillis,alt,'Linewidth',1.5)
 xlim([minMillis maxMillis]);
 ylabel('Alttitude [m]')
 xlabel('Time [ms]');
