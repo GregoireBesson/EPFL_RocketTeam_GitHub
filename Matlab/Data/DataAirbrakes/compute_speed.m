@@ -20,9 +20,9 @@ tPara = 9198;
 
 % keep only burn and flight
 cut = timeMillis>t0&timeMillis<tPara;
-ayG = ayG(cut)
-alt = alt(cut)
-timeMillis = timeMillis(cut)
+ayG = ayG(cut);
+alt = alt(cut);
+timeMillis = timeMillis(cut);
 
 %integrate the acceleration
 speedacc = cumsum((ayG(1:end-1)-9.81).*(timeMillis(2:end)-timeMillis(1:end-1))/1000);
@@ -60,7 +60,7 @@ set(gca,'fontsize', 16);
 tAB = timeMillis(i);
 
 % keep only the flight phase with the airbrakes
-cut2 = timeMillis>tAB&timeMillis<(tPara -20) %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
+cut2 = timeMillis>tAB&timeMillis<(tPara -20); %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
 ayG = ayG(cut2);
 speedacc = speedacc(cut2);
 figure
