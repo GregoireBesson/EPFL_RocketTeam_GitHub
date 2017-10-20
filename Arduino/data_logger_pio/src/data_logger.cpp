@@ -172,6 +172,7 @@ void loop() {
     float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
 
     measurement_time = static_cast<uint32_t>(micros());
+
     /*
     telemSerial->write(TS);
     telem_write_uint32(measurement_time);
@@ -181,15 +182,22 @@ void loop() {
     telem_write_uint16(ay);
     telemSerial->write(AZ);
     telem_write_uint16(az);
-    */
+    // */
     String dataStringSD = measurement_time + DELIMITER
                           + ax + DELIMITER
                           + ay + DELIMITER
                           + az + DELIMITER
                           + gx + DELIMITER
                           + gy + DELIMITER
-                          + gz + DELIMITER
-                          + mx + DELIMITER
+                          + gz + DELIMITER;
+
+    if (writeToSD) {
+        myFile.print(dataStringSD);
+    }
+    telemSerial->print(dataStringSD);
+    dataStringSD.remove(0, dataStringSD.length());
+
+    dataStringSD = mx + DELIMITER
                           + my + DELIMITER
                           + mz + DELIMITER
                           + temperature
@@ -197,15 +205,9 @@ void loop() {
                           + DELIMITER + altitude;
 
     if (writeToSD) {
-        // on  peut meme mettre le timestamp en microseconds??
-
-
-
         myFile.println(dataStringSD);
     }
-
     telemSerial->println(dataStringSD);
-
 
     /*
 #if VERBOSE
@@ -244,12 +246,12 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
 
 void telem_write_uint32(uint32_t val) {
     for (int8_t i = 3; i >= 0; --i) {
-        telemSerial->write(val >> 8*i);
+        telemSerial->write(val >> 8 * i);
     }
 }
 
 void telem_write_uint16(uint32_t val) {
     for (int8_t i = 3; i >= 0; --i) {
-        telemSerial->write(val >> 8*i);
+        telemSerial->write(val >> 8 * i);
     }
 }
