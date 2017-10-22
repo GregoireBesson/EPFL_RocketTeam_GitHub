@@ -15,4 +15,4 @@ Xcm,            0.840
 Launchpin height, 10e-3
 Launchpin Dia,    10e-3
 Rail angle,       89
-AeroTech_H242.eng, 0
+AeroTech_H123.eng, 0

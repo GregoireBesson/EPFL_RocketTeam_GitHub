@@ -3,6 +3,10 @@ clear all
 close all
 
 load('compute_speed_data.mat');
+load('log.mat');
+
+timeSim = log(:,12)*1000;
+accSim = log(:,13);
 
 % time offset (motor starts burning at t=0ms)
 tOffset = 1.820634e6;
@@ -44,7 +48,6 @@ plot(timeMillis, speedacc,'Linewidth',1.5)
 plot(timeMillis, altacc,'Linewidth',1.5)
 %plot(timeMillis, speedbaro,'Linewidth',1.5)
 legend( 'alt baro', 'acc', 'speed acc', 'alt acc')
-
 xlabel('Time [ms]');
 vline(t0,'r--','Burn')
 vline(tBurnout,'r--','Burnout')
@@ -54,6 +57,16 @@ vline(tApogee,'b','Apogee')
 vline(tPara,'g--','Para')
 set(gca,'fontsize', 16);
 
+figure
+grid on
+hold on
+plot(timeMillis, ayG,'Linewidth',1.5)
+plot(timeSim,accSim,'Linewidth',1.5)
+set(gca,'fontsize', 16);
+legend('Test Flight', 'Simulation')
+xlabel('Time [ms]')
+ylabel('Acceleration')
+title('Simulated acceleration vs Recorded acceleration');
 
 % get airbrakes start as the maximum of the drag during the flight
 [~, i] = min(ayG);
@@ -76,6 +89,3 @@ ylabel('Drag acceleration [m/s^2]');
 xlabel('Speed [m/s]');
 set(gca,'fontsize', 16);
 legend('data', '4th order polynom')
-
-
-
