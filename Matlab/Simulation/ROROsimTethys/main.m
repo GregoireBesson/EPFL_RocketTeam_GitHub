@@ -53,6 +53,7 @@ plot(log(:,12),log(:,13))
 xlabel('Time(s)')
 ylabel('Acceleration')
 legend('Test Flight','Simulation')
+grid on
 %t2 = log(:,12);
 % roll_acel2 = log(:,13);
 % indStart=find(t2>4,1)

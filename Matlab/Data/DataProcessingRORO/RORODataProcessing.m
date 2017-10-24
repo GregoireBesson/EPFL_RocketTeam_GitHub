@@ -1,7 +1,7 @@
 % RORO Data 
 clear;
 
-dataRaw = csvread('mpu6000.csv', 1, 0);
+% dataRaw = csvread('mpu6000.csv', 1, 0);
 
 %% Extracting 90 sec of data
 liftoff = 2399.3;
@@ -9,15 +9,18 @@ touchdown = 81.8500;
 separation = 10.5700;
 burnout = 1.7; 
 toffset= liftoff- 40;
-t = dataRaw(:,1)-toffset; 
+
+load('flightdataRaw.mat');
+
+t = flightdataRaw(:,1)-toffset; 
 % relevent data 3495 sec after turning on IMU
 indStart = find(t>0,1); 
 indEnd = find(t>90,1);
 %cliped data
-flightdataRaw = dataRaw(indStart:indEnd,:);
-%flightdataRaw2 = acceldataRaw(indStart:indEnd,:);
-
-flightdataRaw = cleanData(flightdataRaw); % removes values wiht dt=0 and rotates z up
+% flightdataRaw = dataRaw(indStart:indEnd,:);
+% %flightdataRaw2 = acceldataRaw(indStart:indEnd,:);
+% 
+% flightdataRaw = cleanData(flightdataRaw); % removes values wiht dt=0 and rotates z up
 
 %% Calibration
 t= flightdataRaw(:,1)-toffset;
@@ -185,8 +188,8 @@ legend('x','y','z')
 %%
 figure(2)
 hold on
-plot(t,acc(:,1))
-plot(t,-acc(:,2))
+%plot(t,acc(:,1))
+%plot(t,-acc(:,2))
 plot(t,-acc(:,3))
 line([separation  separation],[-50 100],'Color',[0 1 0])
 line([0  0],[-50 100],'Color',[1 0 0])
@@ -194,7 +197,7 @@ line([burnout  burnout],[-50 100],'Color',[0 0 1])
 hold off
 ylabel('Acceleration(m/s/s)')    
 xlabel('time(s)')
-legend('x','y','z')
+%legend('x','y','z')
 %%
 % figure(3)
 % hold on
@@ -249,5 +252,19 @@ xlabel('x(m)')
 ylabel('y (m)')
 zlabel('Height (m)')
 %axis([-400 400 -400 400 0 800])
-h_max=max(pos(:,3))
-h_max=min(pos(:,3))
+h_max=max(pos(:,3));
+h_max=min(pos(:,3));
+
+%%
+figure(10);
+cut = t>(burnout) & t< (separation);
+velocity = -vel(:,3);
+velocity = velocity(cut);
+accz = -acc(:,3);
+accz = accz(cut);
+scatter(velocity,accz,'.')
+grid on
+title('Drag acceleration vs speed with airbrakes');
+ylabel('Drag acceleration [m/s^2]');
+xlabel('Speed [m/s]');
+set(gca,'fontsize', 16);

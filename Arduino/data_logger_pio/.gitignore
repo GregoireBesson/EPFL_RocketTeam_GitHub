@@ -5,3 +5,5 @@ CMakeLists.txt
 
 cmake-build-*/
 .idea/
+.clang_complete
+.gcc-flags.json
