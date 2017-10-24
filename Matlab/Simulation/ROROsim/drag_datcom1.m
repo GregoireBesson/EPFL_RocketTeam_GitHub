@@ -8,8 +8,8 @@ alphatab = [0:0.5:5];
 
 v0tab= [10:10:250];
 h= length(v0tab);
-%Cd = zeros(h,w);
-%for i=1:h
+Cd = zeros(h,w);
+for i=1:h
     
 L = 2.646; %characteristic length
 rho =  1.225; % density 
@@ -114,7 +114,7 @@ Cd_i = 2*Cf_f*(1+2*T_f/l_m)*4*n*(A_fp-A_fe)/(pi*d_f^2);
 Cd0 = Cd_fb + Cd_b + Cd_f + Cd_i;
 
 % compressibility correction
-%for j=1:w
+for j=1:w
 % Alpha
 alpha =deg2rad(alphatab(1));
 deltaktab=[4 6 8 10 12 14 16 18 20;0.78 0.86 0.92 0.94 0.96 0.97 0.975 0.98 0.982];
@@ -136,14 +136,14 @@ Kfb=0.1935*Rs^2+0.8174*Rs+1;
 
 Cd_f_alpha = (1.2*A_fp*4/(pi*d_f^2) +3.12*(Kfb +Kbf-1)*A_fe*4/(pi*d_f^2))*alpha^2;
 
-Cd = Cd0 + Cd_b_alpha + Cd_f_alpha
+Cd = Cd0 + Cd_b_alpha + Cd_f_alpha x
 
 
-% Cdsurf(i,j) = Cd/sqrt(1-M^2)
-% end
-% end
-% 
-% surf(alphatab',v0tab',Cdsurf)
-% xlabel('alpha (deg)')
-% ylabel('V0 (m/s)')
-% zlabel('Cd')
+Cdsurf(i,j) = Cd/sqrt(1-M^2)
+end
+end
+
+surf(alphatab',v0tab',Cdsurf)
+xlabel('alpha (deg)')
+ylabel('V0 (m/s)')
+zlabel('Cd')
