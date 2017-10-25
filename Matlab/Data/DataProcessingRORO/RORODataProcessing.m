@@ -71,7 +71,7 @@ indEnd = find(t>11,1);
 flightdata = flightdata(indStart:indEnd,:);
 flightdata(:,1) = flightdata(:,1) - 40;
 
-figure(3)
+figure(1)
 hold on
 grid on
 plot(t,acc_x/9.81,'Linewidth',1.5)
@@ -178,7 +178,7 @@ angAccel =[angAccel_x,angAccel_y,angAccel_z];
 state = [pos, Q, vel, Qdot, omega, acc, angAccel];
 
 %%
-figure(1)
+figure(2)
 hold on
 plot(t,rate_x)
 plot(t,-rate_y)
@@ -188,7 +188,7 @@ title('Gyro Data')
 xlabel('time(s)')
 legend('x','y','z')
 %%
-figure(2)
+figure(3)
 hold on
 %plot(t,acc(:,1))
 %plot(t,-acc(:,2))
@@ -242,7 +242,7 @@ xlabel('t(m)')
 ylabel('Height (m)')
 %axis([-500 500 -500 500 0 800])
 figure(8)
-plot(t,vel(:,3))
+plot(t,-vel(:,3))
 xlabel('t(m)')
 ylabel('Vel (m)')
 %axis([-500 500 -500 500 0 800])
@@ -254,17 +254,14 @@ xlabel('x(m)')
 ylabel('y (m)')
 zlabel('Height (m)')
 %axis([-400 400 -400 400 0 800])
-h_max=max(pos(:,3));
-h_max=min(pos(:,3));
+h_max=max(-pos(:,3));
 
 %%
 figure(10);
-cut = t>(burnout) & t< (separation);
+cut = t>(burnout+2) & t< (separation-1);
 velocity = -vel(:,3);
 velocity = velocity(cut);
-accz = -acc(:,3);
-accz = accz(cut);
-scatter(velocity,accz,'.')
+scatter(velocity,-acc_z(cut),'.')
 grid on
 title('Drag acceleration vs speed with airbrakes');
 ylabel('Drag acceleration [m/s^2]');

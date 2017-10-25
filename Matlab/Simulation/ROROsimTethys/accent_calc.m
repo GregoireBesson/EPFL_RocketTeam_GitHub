@@ -81,11 +81,11 @@ function  [t, state] = accent_calc( roro,tend )
         alpha = acos(dot(Vnorm,RA));
         roro.alpha = alpha;
         %% ------- P Forces = rate of change of Momentums-------
-        if (X(3) > 15 && roro.brake_t < 5)
+        if (X(3) > 15 && roro.brake_t < 3.5)
             roro.brake_t = roro.brake_t + roro.deltat;
 
         end
-       if(roro.brake_t > 5)
+       if(roro.brake_t > 3.5)
            roro.Cdbrake = 0.3202;
        end
 %         
@@ -98,7 +98,7 @@ function  [t, state] = accent_calc( roro,tend )
         Fg = [0, 0, -mg]';
         
         % Axial Forces
-        CD = roro.Cd + roro.Cdbrake;
+        CD = roro.Cd + roro.Cdbrake; % ///////////// why are you not considering A_brakes ????
         Famag = 0.5*env.rho*Vmag^2*roro.A_ref*CD;   
         
         Fa = -Famag*RA;
