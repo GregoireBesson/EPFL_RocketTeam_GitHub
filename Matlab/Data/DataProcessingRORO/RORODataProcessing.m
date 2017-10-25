@@ -73,12 +73,14 @@ flightdata(:,1) = flightdata(:,1) - 40;
 
 figure(3)
 hold on
-plot(t,acc_x)
-plot(t,acc_y)
-plot(t,acc_z)
+grid on
+plot(t,acc_x/9.81,'Linewidth',1.5)
+plot(t,acc_y/9.81,'Linewidth',1.5)
+plot(t,-acc_z/9.81,'Linewidth',1.5)
 hold off
-title('Acc')
-xlabel('time(s)')
+title('Acceleration on the 3 axis (RORO test flight)')
+xlabel('Time [s]')
+ylabel('Acceleration [g]')
 legend('x','y','z')
 %%
 t =flightdata(:,1);
