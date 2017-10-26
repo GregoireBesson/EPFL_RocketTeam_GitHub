@@ -37,6 +37,10 @@ h_max=max(state(:,3))
 
 %%
 extract_data ( state,t);
+%%
+time = log(:,12);
+acceleration = log(:,13);
+speed = log(:,6);
 
 %% Debugging plots
 % figure(3)
@@ -49,10 +53,10 @@ extract_data ( state,t);
 % % 
 figure
 hold on
-plot(log(:,12),log(:,13))
+plot(time,acceleration)
 xlabel('Time(s)')
-ylabel('Acceleration')
-legend('Test Flight','Simulation')
+ylabel('Acceleration [m/s^2]')
+legend('Simulation acceleration')
 grid on
 %t2 = log(:,12);
 % roll_acel2 = log(:,13);
@@ -64,3 +68,11 @@ grid on
 %% Plot flight and stability data
 %plotData(log, roro);
 
+%% Plot speed
+figure
+hold on
+plot(time,speed)
+xlabel('Time(s)')
+ylabel('Speed [m/s]')
+legend('Simulated speed')
+grid on
