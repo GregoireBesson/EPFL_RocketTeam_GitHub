@@ -1,0 +1,6 @@
+function plotRocketState()
+
+    plotRocketBody()
+    
+
+end
