@@ -4,8 +4,8 @@ function motor_init( roro )
     % the reletive properties of the motor. 
     
     % Extracting thrust curve
-    R1=4;
-    C1=0;
+    R1 = 4;
+    C1 = 0;
     motorname = char(roro.motorname);
     motordata = dlmread(motorname,'',R1,C1);
     roro.motordata = [0, 0; motordata]; % at 0 0 at start of date
@@ -18,8 +18,8 @@ function motor_init( roro )
     tline = fgets(fid);
     tline = fgets(fid);
     C = strsplit(tline);
-    Motor_diameter = str2double((C(2)))*1e-3; %[m]
-    Motor_lenght = str2double((C(3)))*1e-3; %[m]
+    Motor_diameter = str2double((C(2)))*1e-3;   % [m]
+    Motor_lenght = str2double((C(3)))*1e-3;     % [m]
     Mass_prop = str2double((C(5)));
     Mass_motor = str2double((C(6)));
     roro.propM_tot = Mass_prop;

@@ -15,15 +15,15 @@ motor_init( roro ); %loads rocket motor
 env = environement(350, 15, 96000, roro );
 
 %% Phase: Accent
-tend = 30;  %simulate 30 seconds
+tend=30;
 [t, state] = accent_calc(roro,tend);
 
-%% Plot the trajectory
+%% Plot th
 figure(1);
 plot(t,state(:,3))
 xlabel('Time(s)')
 ylabel('Height (m)')
- 
+% 
 figure(2);
 plot3(state(:,1),state(:,2),state(:,3))
 xlabel('x(m)')
@@ -35,20 +35,12 @@ h_max=max(state(:,3))
 
 %%
 extract_data ( state,t);
+%%
 time = log(:,12);
 acceleration = log(:,13);
 speed = log(:,6);
 
-%% Plot the speed
-figure
-hold on
-plot(time,speed)
-xlabel('Time(s)')
-ylabel('Speed [m/s]')
-legend('Simulated speed')
-grid on
-
-%%  Plot the acceleration
+%% Debugging plots
 % figure(3)
 % 
 % plot(log(:,10),log(:,2))
@@ -73,3 +65,12 @@ grid on
 
 %% Plot flight and stability data
 %plotData(log, roro);
+
+%% Plot speed
+figure
+hold on
+plot(time,speed)
+xlabel('Time(s)')
+ylabel('Speed [m/s]')
+legend('Simulated speed')
+grid on

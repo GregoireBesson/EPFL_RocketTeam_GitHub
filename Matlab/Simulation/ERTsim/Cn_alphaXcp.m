@@ -1,18 +1,18 @@
 function [Cn_alpha, Xcp, Cda, zeta, Ssm, Ssm_B, Ccm]=Cn_alphaXcp(roro) 
-    % Takes rocket handle and environment  to calculate Cn, location of cop
+    % Takes rocket handle and environment to calculate Cn, location of CoP
     
     % using barrowman implemented in OpenRocket
     global env
 
-    rho =  env.rho; % density 
-    mu =  env.mu;  % dynamic viscosity 
-    C = env.C; %speed of sound dry air 15C sea level
-    V = norm(roro.Xdot,2);   %ms-1 Mag of characteristic velocity at center of pressure location 
-    M = V/C;
-    Re  = roro.Re;
+    rho =  env.rho;             % air density [kg/m^3]
+    mu =  env.mu;               % dynamic viscosity 
+    C = env.C;                  % speed of sound dry air 15C sea level
+    V = norm(roro.Xdot,2);      % ms-1 Mag of characteristic velocity at center of pressure location 
+    M = V/C;                    % Mach number [.]
+    Re  = roro.Re;              % Reynolds number [.]
 
     % correction for compressible flow 
-    beta = sqrt( 1 - M^2); % M <1
+    beta = sqrt( 1 - M^2);      % M <1
 
     % Rocket dimentions 
     L = roro.Length; 

@@ -20,7 +20,7 @@ function  [t, state] = accent_calc( roro,tend )
         % burnout
         % DONE: but need to find automatically roro.t_Burnout, for now
         % it is entered by user
-        if (t > 0)
+        if (t>0)
             roro.deltat = t - roro.time;
             roro.time = t;
             % runs each cycle to update motor stats
@@ -49,12 +49,11 @@ function  [t, state] = accent_calc( roro,tend )
         CnXcp = roro.CnXcp;
         Cn= CnXcp(1);
         Xcp= CnXcp(2);
-        Cda = CnXcp(3);     % Damping coefficient
-        zeta = CnXcp(4);    % Damping ratio
-        Ssm = CnXcp(5);     % Static stability margin
-        
+        Cda = CnXcp(3); % Damping coefficient
+        zeta = CnXcp(4); % Damping ratio
+        Ssm = CnXcp(5); % Static stability margin
         %% ------- X Velocity-------
-        Xdot=P./roro.Mass;  % P = mv -> v = P/m
+        Xdot=P./roro.Mass;
         
         %% ------- Q Angular velocity--------- in quarternians 
         invIbody = roro.Ibody\eye(3); %inv(roro.Ibody); inverting matrix
@@ -88,9 +87,7 @@ function  [t, state] = accent_calc( roro,tend )
         Vnorm = normalize(V);
         alpha = acos(dot(Vnorm,RA));
         roro.alpha = alpha;
-        
         %% ------- P Forces = rate of change of Momentums-------
-        
         if (X(3) > 15 && roro.brake_t < 3.5)
             roro.brake_t = roro.brake_t + roro.deltat;
 

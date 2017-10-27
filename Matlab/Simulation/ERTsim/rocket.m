@@ -40,22 +40,22 @@ classdef rocket <handle
       propM_current             % Remaning prop mass
       propM_prev = 0;           % Mass for previous time step to calcualte deltaMass
       
-      departureState            %Saves the state vector at departure
-      t_Burnout = 0;
+      departureState            % Saves the state vector at departure
+      t_Burnout = 0;            % Burnout time (read from motor spec)
       
       brake_t =0;
       Cdbrake = 0;
       
       % Current State Vector with Initial values, Updated in accent_calc
-      time = 0;         %time
-      X = [0; 0; 0];    % Position x, y, z   
-      Q = [1; 0; 0; 0]; % Angle in quarternions  
-      P = [0; 0; 0];      % Linear Momentum  
-      L = [0; 0; 0];      % Angular momentum
-      Xdot = [0; 0; 0];    % Velocity xdot, ydot, zdot 
-      Qdot = [0; 0; 0; 0];% Angular rates
-      Pdot = [0; 0; 0];   % Linear Momentum rates = applied force
-      Ldot = [0; 0; 0];   % Angular Momentum rates= applied torques
+      time = 0;             % time
+      X = [0; 0; 0];        % Position x, y, z   
+      Q = [1; 0; 0; 0];     % Angle in quarternions  
+      P = [0; 0; 0];        % Linear Momentum  
+      L = [0; 0; 0];        % Angular momentum
+      Xdot = [0; 0; 0];     % Velocity xdot, ydot, zdot 
+      Qdot = [0; 0; 0; 0];  % Angular rates
+      Pdot = [0; 0; 0];     % Linear Momentum rates = applied force
+      Ldot = [0; 0; 0];     % Angular Momentum rates= applied torques
       alpha = 0;      
           
      
@@ -100,12 +100,12 @@ classdef rocket <handle
            Cd = Cd_mandell(obj);
            % impose an upper boundary of 10 for Cd
            if (isinf(Cd) || Cd > 10)
-               Cd =10;
+               Cd = 10;
            end
        end
        
        function CnXcp = CnXcp(obj) % Normal force and Cop location
-           [Cn_alpha, Xcp, Cda, zeta, Ssm]=Cn_alphaXcp(obj);
+           [Cn_alpha, Xcp, Cda, zeta, Ssm] = Cn_alphaXcp(obj);
            CnXcp = [Cn_alpha*obj.alpha, Xcp, Cda, zeta, Ssm];
            [Cn_alpha, Xcp, Cda, zeta, Ssm, Ssm_B, Ccm]=Cn_alphaXcp(obj);
            CnXcp = [Cn_alpha*obj.alpha, Xcp, Cda, zeta, Ssm, Ssm_B, Ccm];
@@ -127,15 +127,18 @@ classdef rocket <handle
        
        function Mass = Mass(obj) % Current mass of rocket
            M = obj.motordata;
-           if ( obj.time > M(end,1)); % To assure it goes to zero incase of integartion error
+           % To assure it goes to zero in case of integration error
+           if ( obj.time > M(end,1)) 
                obj.propM_current =0;
            end
            Mass= obj.Mass_dry + obj.propM_current;               
        end
        
-       function Xcm = Xcm(obj) % Current Center of mass of rocket
+       % Current Center of mass of rocket
+       function Xcm = Xcm(obj) 
            M = obj.motordata;
-           if ( obj.time > M(end,1)); % To assure it goes to zero incase of integartion error
+           % To assure it goes to zero incase of integration error
+           if ( obj.time > M(end,1)) 
                Xcm = obj.Xcm_dry;
            end
            Xcm= obj.Xcm_dry*obj.Mass_dry + obj.Xcm_prop*obj.propM_current; 
@@ -144,7 +147,8 @@ classdef rocket <handle
        
        function Ibody = Ibody(obj) % Current Inertia of the rocket
            M = obj.motordata;
-           if ( obj.time > M(end,1)); % To ensure Iprop goes to zero incase of integartion error
+           % To assure it goes to zero incase of integration error
+           if ( obj.time > M(end,1))
                Ibody = obj.Ibody_dry;
            end
            Ibody = obj.Ibody_dry + obj.Iprop;
