@@ -98,6 +98,7 @@ classdef rocket <handle
 
        function Cd = Cd(obj) % Drag in axial direction
            Cd = Cd_mandell(obj);
+           % impose an upper boundary of 10 for Cd
            if (isinf(Cd) || Cd > 10)
                Cd =10;
            end
