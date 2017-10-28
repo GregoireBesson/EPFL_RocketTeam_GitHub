@@ -61,7 +61,7 @@ figure
 grid on
 hold on
 plot(timeMillis, ayG,'Linewidth',1.5)
-plot(timeSim,accSim,'Linewidth',1.5)
+plot(timeSim,accSim+9.81,'Linewidth',1.5)
 set(gca,'fontsize', 16);
 legend('Test Flight', 'Simulation')
 xlabel('Time [ms]')

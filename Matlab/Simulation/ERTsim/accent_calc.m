@@ -24,9 +24,9 @@ function  [t, state] = accent_calc( roro,tend )
             roro.deltat = t - roro.time;
             roro.time = t;
             % runs each cycle to update motor stats
-            if (t < roro.t_Burnout)
+            %if (t < roro.t_Burnout)
                 burn_data(roro);    
-            end
+            %end
         end
         
         X = state(1:3);     % Position x, y, z   
@@ -91,11 +91,11 @@ function  [t, state] = accent_calc( roro,tend )
         
         %% ------- P Forces = rate of change of Momentums-------
         
-        if (X(3) > 15 && roro.brake_t < 3.5)
+        if (X(3) > 15 && roro.brake_t < 1.7)
             roro.brake_t = roro.brake_t + roro.deltat;
 
         end
-       if(roro.brake_t > 3.5)
+       if(roro.brake_t > 1.7)
            roro.Cdbrake = 0.3202;
        end
 %         

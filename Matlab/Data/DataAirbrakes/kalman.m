@@ -2,7 +2,7 @@ function [ x ] = kalman_x( x, acc, alt, dt)
 
 % x: actual state
 % acc: measured acceleration
-% alt: measured  alatitude
+% alt: measured  altitude
 % dt: period
 
 F = [1 dt dt^2; 0 1 dt; 0 0 0];
