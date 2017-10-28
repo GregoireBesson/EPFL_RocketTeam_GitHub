@@ -30,6 +30,11 @@ function plotRocketBody(roro)
     fin_offs = 50e-3;
     fin_t = roro.fin_t;
     
+    brakeLength = 30e-2;
+    brakeWidth = 1e-2;
+    brakeAngle = 45*2*pi/360;
+    brakePos = 0.70;
+    
     % factor induced by perspective
     f = 0.75;
     
@@ -46,17 +51,19 @@ function plotRocketBody(roro)
                 fin_offs+fin_base-fin_h*sin(fin_sweep)-fin_top];
     finMiddle = [-fin_t -fin_t fin_t fin_t ; ...
                  fin_offs fin_offs+fin_base fin_offs+fin_base fin_offs];
+    brakeRight = [(R-brakeWidth)*cos(brakeAngle) R R R-brakeWidth; brakePos brakePos ...
+                  (brakePos-brakeLength)*sin(brakeAngle)...
+                  (brakePos-brakeLength)*sin(brakeAngle)] ;
     
-    figure('Name','Rocket State','Position',[0 1000 300 1000])
     hold on
     fill(nosecone(X,:),nosecone(Y,:),'r')
     fill(body(X,:),body(Y,:),'k')
     fill(finRight(X,:),finRight(Y,:),'r')
     fill(finLeft(X,:),finLeft(Y,:),'r')
     fill(finMiddle(X,:),finMiddle(Y,:),'r')
+    fill(brakeRight(X,:),brakeRight(Y,:),'r')
     %xlim([-1.5*L 1.5*L]);
     %ylim([-0.5*L 1.5*L]);
     axis([-0.25*Length 0.25*Length -0.25*Length 1.25*Length])
-    daspect([1 1 1])
 
 end
