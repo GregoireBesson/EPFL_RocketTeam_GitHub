@@ -20,6 +20,8 @@ void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data);
 
 void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data);
 
+void bip(int duration);
+
 
 #define    MPU9250_ADDRESS            0x68
 #define    MAG_ADDRESS                0x0C
@@ -43,6 +45,8 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data);
 #define    AX                        0x20
 #define    AY                        0x21
 #define    AZ                        0x22
+
+#define    BUZZER                    A0
 
 
 #endif //DATA_LOGGER_PIO_DATA_LOGGER_H

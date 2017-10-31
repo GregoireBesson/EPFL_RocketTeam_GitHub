@@ -61,6 +61,7 @@ void setup() {
     pinMode(led, OUTPUT);
     pinMode(error_led, OUTPUT);
     pinMode(button, INPUT_PULLUP);
+    pinMode(BUZZER, OUTPUT);
 
     if (!SD.begin(chipSelect)) {
         digitalWrite(error_led, HIGH);
@@ -87,15 +88,17 @@ void setup() {
         digitalWrite(error_led, HIGH);
     }
 
-    /*
+
 #if VERBOSE
     Serial.println("Press the button to start data logging");
 #endif
     while(digitalRead(button));
     delay(10);
     while(!digitalRead(button));
-    digitalWrite(led,HIGH);
-     */
+
+    // send visual and audio feedback when the logging starts
+    digitalWrite(led, HIGH);
+    bip(1000);
 
     // if the file opened okay, write to it:
     myFile.println("START");
@@ -106,7 +109,7 @@ void setup() {
 #endif
     telemSerial->println("Telemetry starts now");
 
-    digitalWrite(led, HIGH);
+
 
     //request for the first mag measurement
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
@@ -123,7 +126,6 @@ void loop() {
     // Stop logging and switch off the LED when button is pushed
 
     if (!digitalRead(button) & writeToSD) {
-        digitalWrite(led, LOW);
         myFile.println("STOP");
         // close the file:
         myFile.close();
@@ -131,6 +133,13 @@ void loop() {
         Serial.println("File correctly saved.");
 #endif
         writeToSD = false;
+        digitalWrite(led, LOW);
+        bip(500);
+        delay(500);
+        bip(500);
+
+        // infinite loop to stop the sampling after closing the file
+        while(true);
     }
 
     // ____________________________________
@@ -254,4 +263,16 @@ void telem_write_uint16(uint32_t val) {
     for (int8_t i = 3; i >= 0; --i) {
         telemSerial->write(val >> 8 * i);
     }
+}
+
+void bip(int duration) {
+  // send a bip when the logging starts
+  int period = 100;
+  int count = duration*5;
+  for (int i = 0; i < count; i++) {
+    digitalWrite(BUZZER, HIGH);
+    delayMicroseconds(period);
+    digitalWrite(BUZZER, LOW);
+    delayMicroseconds(period);
+  }
 }
