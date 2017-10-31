@@ -24,7 +24,7 @@ unsigned long Time, standbyTime;
 unsigned long stepSignal_time1 = 1500;
 unsigned long stepSignal_time2 = 3500;
 unsigned long brakeSignal_time = 5000;
-unsigned long brakeSignal_height = 300; 
+unsigned long brakeSignal_height = 300;
 
 enum State{
   READY,
@@ -45,7 +45,7 @@ Servo servo_b2;
 Servo servo_b3;
 void setup(){
   //brakes
-  
+
   servo_1.attach(9);
   servo_2.attach(10);
   servo_3.attach(11);
@@ -55,7 +55,7 @@ void setup(){
 
   pinMode(13, OUTPUT);
   Serial.begin(115200);
-  
+
   //Time in millisecons
 
   servo_1.write(offset_s1);
@@ -66,15 +66,15 @@ void setup(){
   servo_b3.write(offset_b3);
   standbyTime = millis();
   delay(500);
-      
-  h0 = 347; // what ever the preasure sensor gives 
+
+  h0 = 347; // what ever the preasure sensor gives
   #if VERBOSE
   Serial.println("Ready");
   #endif
-  
+
   //Serial.print(1);
 
-  
+
 }
 
 
@@ -85,7 +85,7 @@ void loop() {
   static String buffAcc = "";
   static String buffAlt = "";
   // to do the loop periodically, maybe not mandatory
-  
+
   //while(millis()-last<period);
   //last = millis();
   char c;
@@ -96,17 +96,17 @@ void loop() {
   float a = Serial.parseFloat()/208.77;
   Serial.read();
   float altitude = Serial.parseFloat();*/
-  
+
   //while(c = (char)Serial.read()!='h') buffAcc += c;
   //while(c = (char)Serial.read()!='\n') buffAlt += c;<
-  
+
   //float a = Serial.parseFloat()/208.77; //7 = 2048/9.81
   //float altitude = Serial.parseFloat();
   //Serial.println(a);
   //Serial.println(altitude);
   //Serial.println(Serial.read());
   //Serial.print(1);
-      
+
   switch(state){
     case READY:
 
@@ -116,7 +116,7 @@ void loop() {
       // TODO ajputer un temps d'accélération, peut etre avec un état intermédiaire
       // TODO conversion de l'acceleration
       // WARN sens de l'accélération positive
-      
+
       if (Serial.read() == '1'){
         state = MOTOR;
         #if VERBOSE
@@ -125,7 +125,7 @@ void loop() {
         lastState = millis();
       }
       break;
-      
+
     case MOTOR:
       digitalWrite(13, LOW);
 
@@ -138,7 +138,7 @@ void loop() {
           state = READY;
           break;
         }
-        
+
         lastState = millis();
         state = BRAKES;
         #if VERBOSE
@@ -162,7 +162,7 @@ void loop() {
         #endif
       }
       break;
-      
+
     case BRAKES:
       servo_b1.write(offset_s1+bangle);
       servo_b2.write(offset_s2+bangle);
@@ -172,21 +172,8 @@ void loop() {
       Serial.println("PHASE2");
       #endif
       break;
-      
+
     case PHASE2:
       break;
   }
 }
-      
-      
-
-     
-    
-    
-    
-      
-    
-    
-  
-  
-  

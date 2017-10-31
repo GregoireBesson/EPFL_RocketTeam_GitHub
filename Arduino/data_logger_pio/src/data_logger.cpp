@@ -9,6 +9,7 @@ const int error_led = 7;
 const unsigned long period = 20 * 1000; // period in microseconds
 const float altInit = 750;
 float seaLevelhPa = 1013.25;
+float h0;
 bool writeToSD = false;
 
 Adafruit_BMP280 bmp; // I2C
@@ -76,7 +77,7 @@ void setup() {
         if (myFile) {
             writeToSD = true;
 #if VERBOSE
-            Serial.println("initialization of sd card file succeeded!");
+            Serial.println("initialization of SD card file succeeded!");
 #endif
         }
     }
@@ -98,7 +99,7 @@ void setup() {
 
     // send visual and audio feedback when the logging starts
     digitalWrite(led, HIGH);
-    bip(1000);
+    bip(800);
 
     // if the file opened okay, write to it:
     myFile.println("START");
@@ -109,11 +110,13 @@ void setup() {
 #endif
     telemSerial->println("Telemetry starts now");
 
-
-
     //request for the first mag measurement
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
+    h0 = 347; // what ever the preasure sensor gives
+#if VERBOSE
+    Serial.println("Ready");
+#endif
 }
 
 
@@ -204,20 +207,25 @@ void loop() {
         myFile.print(dataStringSD);
     }
     telemSerial->print(dataStringSD);
+#if VERBOSE
+    Serial.print(dataStringSD);
+#endif
     dataStringSD.remove(0, dataStringSD.length());
 
     dataStringSD = mx + DELIMITER
-                          + my + DELIMITER
-                          + mz + DELIMITER
-                          + temperature
-                          + DELIMITER + pressure
-                          + DELIMITER + altitude;
+                 + my + DELIMITER
+                 + mz + DELIMITER
+                 + temperature
+                 + DELIMITER + pressure
+                 + DELIMITER + altitude;
 
     if (writeToSD) {
         myFile.println(dataStringSD);
     }
     telemSerial->println(dataStringSD);
-
+#if VERBOSE
+    Serial.println(dataStringSD);
+#endif
     /*
 #if VERBOSE
     if (abs((float) ay / 208.77) > 20)Serial.print('1');
@@ -226,6 +234,86 @@ void loop() {
      */
     //String dataStringArduino= 'a'+String(ay)+'h'+String(altitude);
     //Serial.println(dataStringArduino);
+
+
+    // start the Finite State Machine
+    static char state = READY;
+    static long last = 0;
+    static long lastState = 0;
+    static String buffAcc = "";
+    static String buffAlt = "";
+    // to do the loop periodically, maybe not mandatory
+
+    //while(millis()-last<period);
+    //last = millis();
+
+    switch(state){
+      case READY:
+
+        //digitalWrite(13, HIGH);
+
+        // détection d'accélération
+        // TODO ajputer un temps d'accélération, peut etre avec un état intermédiaire
+        // TODO conversion de l'acceleration
+        // WARN sens de l'accélération positive
+
+        if (abs((float) ay) > ACC_THRESHOLD){
+          state = MOTOR;
+        #if VERBOSE
+          Serial.println("MOTOR");
+        #endif
+          lastState = millis();
+        }
+        break;
+
+      case MOTOR:
+        //digitalWrite(13, LOW);
+
+        // timer ou fin de l'accélération
+        if (abs((float) ay) < ACC_THRESHOLD){
+          if(millis()-lastState < 500){///////////////////////////////////////////////////////77
+          #if VERBOSE
+            Serial.println("faux départ");
+          #endif
+            state = READY;
+            break;
+          }
+
+          lastState = millis();
+          state = BRAKES;
+        #if VERBOSE
+          Serial.println("BRAKES");
+        #endif
+        }
+        if(millis()-lastState > 2200){
+          lastState = millis();
+          state = BRAKES;
+        #if VERBOSE
+        Serial.println("BRAKES");
+          #endif
+        }
+        break;
+      case PHASE1:
+        // timer ou altitude; ou les deux
+        if(millis()-lastState > 500){
+          state = BRAKES;
+          #if VERBOSE
+          Serial.println("BRAKES");
+          #endif
+        }
+        break;
+
+      case BRAKES:
+        Serial.print('1');
+        state = PHASE2;
+      #if VERBOSE
+        Serial.println("PHASE2");
+      #endif
+        break;
+
+      case PHASE2:
+        break;
+    }
 }
 
 // This function read Nbytes bytes from I2C device at address Address.

@@ -46,7 +46,17 @@ void bip(int duration);
 #define    AY                        0x21
 #define    AZ                        0x22
 
+#define    ACC_THRESHOLD             1000 //4175 //=20*208,77
+
 #define    BUZZER                    A0
+
+enum State{
+  READY,
+  MOTOR,
+  PHASE1,
+  BRAKES,
+  PHASE2
+};
 
 
 #endif //DATA_LOGGER_PIO_DATA_LOGGER_H
