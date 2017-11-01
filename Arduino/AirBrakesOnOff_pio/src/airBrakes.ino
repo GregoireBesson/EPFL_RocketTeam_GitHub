@@ -168,9 +168,9 @@ void loop() {
       servo_b2.write(offset_s2+bangle);
       servo_b3.write(offset_s3+bangle);
       state = PHASE2;
-      #if VERBOSE
+    #if VERBOSE
       Serial.println("PHASE2");
-      #endif
+    #endif
       break;
 
     case PHASE2:
