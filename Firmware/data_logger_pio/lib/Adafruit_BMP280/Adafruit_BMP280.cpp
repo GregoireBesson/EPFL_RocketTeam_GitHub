@@ -30,7 +30,7 @@ Adafruit_BMP280::Adafruit_BMP280()
 bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
   _i2caddr = a;
   Wire.begin();
-  
+
   if (read8(BMP280_REGISTER_CHIPID) != chipid)
     return false;
 
@@ -121,13 +121,13 @@ uint32_t Adafruit_BMP280::read24(byte reg)
   Wire.write((uint8_t)reg);
   Wire.endTransmission();
   Wire.requestFrom((uint8_t)_i2caddr, (byte)3);
-  
+
   value = Wire.read();
   value <<= 8;
   value |= Wire.read();
   value <<= 8;
   value |= Wire.read();
-  
+
   return value;
 }
 
@@ -209,7 +209,7 @@ float Adafruit_BMP280::readPressure(void) {
   var2 = (((int64_t)_bmp280_calib.dig_P8) * p) >> 19;
 
   p = ((p + var1 + var2) >> 8) + (((int64_t)_bmp280_calib.dig_P7)<<4);
-  return (float)p/256;
+  return (float)p / 256;
 }
 
 float Adafruit_BMP280::readAltitude(float seaLevelhPa) {

@@ -25,7 +25,6 @@ void bip(int duration);
 
 #define    MPU9250_ADDRESS            0x68
 #define    MAG_ADDRESS                0x0C
-#define    BMP280_ADDRESS             0x76
 
 #define    GYRO_FULL_SCALE_250_DPS    0x00
 #define    GYRO_FULL_SCALE_500_DPS    0x08

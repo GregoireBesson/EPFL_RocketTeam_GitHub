@@ -7,8 +7,8 @@ const int button = 3;
 const int led = 8;
 const int error_led = 7;
 const unsigned long period = 20 * 1000; // period in microseconds
-const float altInit = 420;
-float seaLevelhPa = 1013.25;
+//const int altInit = 420;
+//float seaLevelhPa = 1013.25;
 bool writeToSD = false;
 
 Adafruit_BMP280 bmp; // I2C
@@ -47,11 +47,11 @@ void setup() {
         while (1);
     }
 
-    seaLevelhPa = bmp.readPressure() / (100 * pow(1 - (altInit / 44330), 1 / 0.1903));
-#if VERBOSE
-    Serial.print("computed sea level pressure:\t");
-    Serial.println(seaLevelhPa);
-#endif
+    //seaLevelhPa = bmp.readPressure() / (100 * pow(1 - (altInit / 44330), 1 / 0.1903));
+//#if VERBOSE
+    //Serial.print("computed sea level pressure:\t");
+    //Serial.println(seaLevelhPa);
+//#endif
 
 
 #if VERBOSE
@@ -102,7 +102,7 @@ void setup() {
 
     // if the file opened okay, write to it:
     myFile.println("START");
-    String temp = "t[ms],\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\ttemp[C],\tpres[hPa]";
+    String temp = "t[ms],\t\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\tpres[hPa]";
     myFile.println(temp);
 #if VERBOSE
     Serial.println("START");
@@ -150,13 +150,16 @@ void loop() {
     uint8_t bufIMU[14];
     I2Cread(MPU9250_ADDRESS, 0x3B, 14, bufIMU);
 
-    int16_t ax = bufIMU[0] << 8 | bufIMU[1];
-    int16_t ay = bufIMU[2] << 8 | bufIMU[3];
-    int16_t az = bufIMU[4] << 8 | bufIMU[5];
+    // array containing the data (acc, gyro, mag)
+    int16_t tab_data[9];
 
-    int16_t gx = bufIMU[8] << 8 | bufIMU[9];
-    int16_t gy = bufIMU[10] << 8 | bufIMU[11];
-    int16_t gz = bufIMU[12] << 8 | bufIMU[13];
+    tab_data[0] = bufIMU[0] << 8 | bufIMU[1]; // ax
+    tab_data[1] = bufIMU[2] << 8 | bufIMU[3];  // ay
+    tab_data[2] = bufIMU[4] << 8 | bufIMU[5];  // az
+
+    tab_data[3] = bufIMU[8] << 8 | bufIMU[9];  // gx
+    tab_data[4] = bufIMU[10] << 8 | bufIMU[11];// gy
+    tab_data[5] = bufIMU[12] << 8 | bufIMU[13];// gz
 
     // _____________________
     // :::  Magnetometer :::
@@ -174,13 +177,15 @@ void loop() {
     // request for the following mag measurement
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
-    int16_t mx = bufMag[3] << 8 | bufMag[2];
-    int16_t my = bufMag[1] << 8 | bufMag[0];
-    int16_t mz = bufMag[5] << 8 | bufMag[4];
+    tab_data[6] = bufMag[3] << 8 | bufMag[2]; // mx
+    tab_data[7] = bufMag[1] << 8 | bufMag[0]; // my
+    tab_data[8] = bufMag[5] << 8 | bufMag[4]; // mz
 
-    float temperature = bmp.readTemperature();
+    //float temperature = bmp.readTemperature();
+
+    // read pressure in Pa (int accurate enough)
     float pressure = bmp.readPressure();
-    float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
+    //float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
 
     measurement_time = static_cast<uint32_t>(micros());
 
@@ -194,29 +199,36 @@ void loop() {
     telemSerial->write(AZ);
     telem_write_uint16(az);
     // */
-    String dataStringSD = measurement_time + DELIMITER
+    /*String dataStringSD = measurement_time + DELIMITER
                           + ax + DELIMITER
                           + ay + DELIMITER
                           + az + DELIMITER
                           + gx + DELIMITER
                           + gy + DELIMITER
                           + gz + DELIMITER;
-
+    */
+    uint8_t i = 0;
     if (writeToSD) {
-        myFile.print(dataStringSD);
+      myFile.print(measurement_time + DELIMITER);
+      for(i=0;i<9;i++){
+        myFile.print(tab_data[i] + DELIMITER);
+      }
+      myFile.println(pressure);
     }
     //telemSerial->print(dataStringSD);
 #if VERBOSE
-    Serial.print(dataStringSD);
+  Serial.print(measurement_time + DELIMITER);
+  for(i=0;i<9;i++){
+    Serial.print(tab_data[i] + DELIMITER);
+  }
+  Serial.println(pressure);
 #endif
-    dataStringSD.remove(0, dataStringSD.length());
+    //dataStringSD.remove(0, dataStringSD.length());
 
-    dataStringSD = mx + DELIMITER
+    /*dataStringSD =  mx + DELIMITER
                  + my + DELIMITER
                  + mz + DELIMITER
-                 + temperature
-                 + DELIMITER + pressure
-                 + DELIMITER + altitude;
+                 + pressure;
 
     if (writeToSD) {
         myFile.println(dataStringSD);
@@ -225,6 +237,7 @@ void loop() {
 #if VERBOSE
     Serial.println(dataStringSD);
 #endif
+*/
     /*
 #if VERBOSE
     if (abs((float) ay / 208.77) > 20)Serial.print('1');
@@ -237,7 +250,6 @@ void loop() {
 
     // start the Finite State Machine
     static char state = READY;
-    static long last = 0;
     static long lastState = 0;
     static String buffAcc = "";
     static String buffAlt = "";
@@ -256,7 +268,7 @@ void loop() {
         // TODO conversion de l'acceleration
         // WARN sens de l'accélération positive
 
-        if (abs((float) ay) > ACC_THRESHOLD){
+        if (abs(tab_data[1]) > ACC_THRESHOLD){
           state = MOTOR;
         #if VERBOSE
           Serial.println("MOTOR");
@@ -269,7 +281,7 @@ void loop() {
         //digitalWrite(13, LOW);
 
         // timer ou fin de l'accélération
-        if (abs((float) ay) < ACC_THRESHOLD){
+        if (abs(tab_data[1]) < ACC_THRESHOLD){
           if(millis()-lastState < 500){///////////////////////////////////////////////////////77
           #if VERBOSE
             Serial.println("faux départ");
@@ -284,7 +296,7 @@ void loop() {
           Serial.println("BRAKES");
         #endif
         }
-        if(millis()-lastState > 2200){
+        if(millis()-lastState > 2500){ // increase this delay
           lastState = millis();
           state = BRAKES;
         #if VERBOSE
@@ -292,7 +304,7 @@ void loop() {
           #endif
         }
         break;
-      case PHASE1:
+      /*case PHASE1:
         // timer ou altitude; ou les deux
         if(millis()-lastState > 500){
           state = BRAKES;
@@ -300,7 +312,7 @@ void loop() {
           Serial.println("BRAKES");
           #endif
         }
-        break;
+        break;*/
 
       case BRAKES:
         Serial.print('1');
