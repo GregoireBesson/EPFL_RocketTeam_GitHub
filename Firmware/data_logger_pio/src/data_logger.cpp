@@ -1,3 +1,4 @@
+#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include "data_logger.h"
 
@@ -7,8 +8,6 @@ const int button = 3;
 const int led = 8;
 const int error_led = 7;
 const unsigned long period = 20 * 1000; // period in microseconds
-//const int altInit = 420;
-//float seaLevelhPa = 1013.25;
 bool writeToSD = false;
 
 Adafruit_BMP280 bmp; // I2C
@@ -33,7 +32,7 @@ void setup() {
     // Configure gyroscope range
     I2CwriteByte(MPU9250_ADDRESS, 27, GYRO_FULL_SCALE_2000_DPS);
     // Configure accelerometers range
-    I2CwriteByte(MPU9250_ADDRESS, 28, ACC_FULL_SCALE_16_G);
+    I2CwriteByte(MPU9250_ADDRESS, 28, ACC_FULL_SCALE_8_G);
     // Set by pass mode for the magnetometers
     I2CwriteByte(MPU9250_ADDRESS, 0x37, 0x02);
 
@@ -48,11 +47,6 @@ void setup() {
     }
 
     //seaLevelhPa = bmp.readPressure() / (100 * pow(1 - (altInit / 44330), 1 / 0.1903));
-//#if VERBOSE
-    //Serial.print("computed sea level pressure:\t");
-    //Serial.println(seaLevelhPa);
-//#endif
-
 
 #if VERBOSE
     Serial.print("\nInitializing SD card... ");
@@ -124,9 +118,8 @@ long int cpt = 0;
 // Main loop, read and display data
 void loop() {
     static unsigned long measurement_time = 0;
-    while (micros() - measurement_time < period);
-    // Stop logging and switch off the LED when button is pushed
 
+    // Stop logging and switch off the LED when button is pushed
     if (!digitalRead(button) & writeToSD) {
         myFile.println("STOP");
         // close the file:
@@ -151,7 +144,7 @@ void loop() {
     I2Cread(MPU9250_ADDRESS, 0x3B, 14, bufIMU);
 
     // array containing the data (acc, gyro, mag)
-    int16_t tab_data[9];
+    int16_t tab_data[9] PROGMEM;
 
     tab_data[0] = bufIMU[0] << 8 | bufIMU[1]; // ax
     tab_data[1] = bufIMU[2] << 8 | bufIMU[3];  // ay
@@ -165,7 +158,6 @@ void loop() {
     // :::  Magnetometer :::
 
     // Read register Status 1 and wait for the DRDY: Data Ready
-
     uint8_t ST1;
     do {
         I2Cread(MAG_ADDRESS, 0x02, 1, &ST1);
@@ -181,32 +173,11 @@ void loop() {
     tab_data[7] = bufMag[1] << 8 | bufMag[0]; // my
     tab_data[8] = bufMag[5] << 8 | bufMag[4]; // mz
 
-    //float temperature = bmp.readTemperature();
-
-    // read pressure in Pa (int accurate enough)
     float pressure = bmp.readPressure();
     //float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
 
     measurement_time = static_cast<uint32_t>(micros());
 
-    /*
-    telemSerial->write(TS);
-    telem_write_uint32(measurement_time);
-    telemSerial->write(AX);
-    telem_write_uint16(ax);
-    telemSerial->write(AY);
-    telem_write_uint16(ay);
-    telemSerial->write(AZ);
-    telem_write_uint16(az);
-    // */
-    /*String dataStringSD = measurement_time + DELIMITER
-                          + ax + DELIMITER
-                          + ay + DELIMITER
-                          + az + DELIMITER
-                          + gx + DELIMITER
-                          + gy + DELIMITER
-                          + gz + DELIMITER;
-    */
     uint8_t i = 0;
     if (writeToSD) {
       myFile.print(measurement_time + DELIMITER);
@@ -215,7 +186,7 @@ void loop() {
       }
       myFile.println(pressure);
     }
-    //telemSerial->print(dataStringSD);
+
 #if VERBOSE
   Serial.print(measurement_time + DELIMITER);
   for(i=0;i<9;i++){
@@ -223,40 +194,10 @@ void loop() {
   }
   Serial.println(pressure);
 #endif
-    //dataStringSD.remove(0, dataStringSD.length());
-
-    /*dataStringSD =  mx + DELIMITER
-                 + my + DELIMITER
-                 + mz + DELIMITER
-                 + pressure;
-
-    if (writeToSD) {
-        myFile.println(dataStringSD);
-    }
-    //telemSerial->println(dataStringSD);
-#if VERBOSE
-    Serial.println(dataStringSD);
-#endif
-*/
-    /*
-#if VERBOSE
-    if (abs((float) ay / 208.77) > 20)Serial.print('1');
-    else Serial.print('0');
-#endif
-     */
-    //String dataStringArduino= 'a'+String(ay)+'h'+String(altitude);
-    //Serial.println(dataStringArduino);
-
 
     // start the Finite State Machine
     static char state = READY;
     static long lastState = 0;
-    static String buffAcc = "";
-    static String buffAlt = "";
-    // to do the loop periodically, maybe not mandatory
-
-    //while(millis()-last<period);
-    //last = millis();
 
     switch(state){
       case READY:
@@ -270,6 +211,7 @@ void loop() {
 
         if (abs(tab_data[1]) > ACC_THRESHOLD){
           state = MOTOR;
+          myFile.println("M");
         #if VERBOSE
           Serial.println("MOTOR");
         #endif
@@ -282,37 +224,24 @@ void loop() {
 
         // timer ou fin de l'accélération
         if (abs(tab_data[1]) < ACC_THRESHOLD){
-          if(millis()-lastState < 500){///////////////////////////////////////////////////////77
+          if(millis()-lastState < 500){
+            myFile.println("FS");
           #if VERBOSE
-            Serial.println("faux départ");
+            Serial.println("False start");
           #endif
             state = READY;
             break;
           }
-
-          lastState = millis();
-          state = BRAKES;
-        #if VERBOSE
-          Serial.println("BRAKES");
-        #endif
         }
         if(millis()-lastState > 2500){ // increase this delay
           lastState = millis();
           state = BRAKES;
+          myFile.println("B");
         #if VERBOSE
-        Serial.println("BRAKES");
-          #endif
+          Serial.println("BRAKES");
+        #endif
         }
         break;
-      /*case PHASE1:
-        // timer ou altitude; ou les deux
-        if(millis()-lastState > 500){
-          state = BRAKES;
-          #if VERBOSE
-          Serial.println("BRAKES");
-          #endif
-        }
-        break;*/
 
       case BRAKES:
         Serial.print('1');
