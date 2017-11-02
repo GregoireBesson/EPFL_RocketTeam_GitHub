@@ -207,7 +207,7 @@ void loop() {
     }
     //telemSerial->print(dataStringSD);
 #if VERBOSE
-    //Serial.print(dataStringSD);
+    Serial.print(dataStringSD);
 #endif
     dataStringSD.remove(0, dataStringSD.length());
 
@@ -223,7 +223,7 @@ void loop() {
     }
     //telemSerial->println(dataStringSD);
 #if VERBOSE
-    //Serial.println(dataStringSD);
+    Serial.println(dataStringSD);
 #endif
     /*
 #if VERBOSE
