@@ -7,6 +7,7 @@ const int chipSelect = 10;
 const int button = 3;
 const int led = 8;
 const int error_led = 7;
+const int brakes_pin = 6;
 const unsigned long period = 20 * 1000; // period in microseconds
 bool writeToSD = false;
 
@@ -22,8 +23,8 @@ void setup() {
     DELIMITER = F(",\t");
 
     //Xbee serial: RX = digital pin 5, TX = digital pin 6
-    telemSerial = new SoftwareSerial(5, 6);
-    telemSerial->begin(57600);
+    //telemSerial = new SoftwareSerial(5, 6);
+    //telemSerial->begin(57600);
 
     // Arduino initialization
     Wire.begin();
@@ -53,7 +54,7 @@ void setup() {
 #endif
     pinMode(chipSelect, OUTPUT);
     pinMode(led, OUTPUT);
-    pinMode(error_led, OUTPUT);
+    pinMode(brakes_pin, OUTPUT);
     pinMode(button, INPUT_PULLUP);
     pinMode(BUZZER, OUTPUT);
 
@@ -118,6 +119,7 @@ long int cpt = 0;
 // Main loop, read and display data
 void loop() {
     static unsigned long measurement_time = 0;
+    static uint8_t counter = 0;
 
     // Stop logging and switch off the LED when button is pushed
     if (!digitalRead(button) & writeToSD) {
@@ -235,23 +237,42 @@ void loop() {
         }
         if(millis()-lastState > 2500){ // increase this delay
           lastState = millis();
-          state = BRAKES;
-          myFile.println("B");
+          state = OPEN;
+          myFile.println("O");
         #if VERBOSE
-          Serial.println("BRAKES");
+          Serial.println("OPEN");
         #endif
         }
         break;
 
-      case BRAKES:
-        Serial.print('1');
-        state = PHASE2;
+      case OPEN:
+        digitalWrite(brakes_pin, HIGH);
+
+        if (millis()-lastState > 800 && counter<3){
+          counter++;
+          state = CLOSE;
+          myFile.println("C");
+          #if VERBOSE
+          Serial.println("CLOSE");
+          #endif
+          lastState = millis();
+        }
+        break;
+      case CLOSE:
+        digitalWrite(brakes_pin, LOW);
+
+        if (millis()-lastState > 800){
+          state = OPEN;
+          myFile.println("O");
+          #if VERBOSE
+          Serial.println("OPEN");
+          #endif
+          lastState = millis();
+        }
+        break;
       #if VERBOSE
         Serial.println("PHASE2");
       #endif
-        break;
-
-      case PHASE2:
         break;
     }
 }
