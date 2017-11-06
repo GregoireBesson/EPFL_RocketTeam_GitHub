@@ -52,9 +52,8 @@ void bip(int duration);
 enum State{
   READY,
   MOTOR,
-  PHASE1,
-  BRAKES,
-  PHASE2
+  OPEN,
+  CLOSE
 };
 
 
