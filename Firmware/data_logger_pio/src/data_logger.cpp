@@ -144,7 +144,7 @@ void loop() {
     I2Cread(MPU9250_ADDRESS, 0x3B, 14, bufIMU);
 
     // array containing the data (acc, gyro, mag)
-    int16_t tab_data[9] PROGMEM;
+    int16_t tab_data[9];
 
     tab_data[0] = bufIMU[0] << 8 | bufIMU[1]; // ax
     tab_data[1] = bufIMU[2] << 8 | bufIMU[3];  // ay
