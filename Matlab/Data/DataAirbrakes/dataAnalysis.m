@@ -82,7 +82,8 @@ altFiltered = filter(b,a,alt);
 tmp = trapz(ay-9.81);
 %speed = tmp(0:end-1).*(timeSec(2:end)-timeSec(1:end-1));
 %plot (speed)
-speed = (altFiltered(2:end)-altFiltered(1:end-1))./(timeSec(2:end)-timeSec(1:end-1));
+speed = (altFiltered(2:end)-altFiltered(1:end-1))./...
+        (timeSec(2:end)-timeSec(1:end-1));
 
 %% Plots of temp and pressure and altitude
 
@@ -98,12 +99,12 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 title('Thermometer and baromoter')
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,2)
 plot(timeMillis,press,'Linewidth',1.5)
@@ -114,11 +115,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,3)
 plot(timeMillis,alt,'Linewidth',1.5)
@@ -129,15 +130,15 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 %% Plots of magnetometers on three axis
 figure(2)
-scatter3(mx, my, mz,'.');
+scatter3(mx, my, mz,'.','DisplayName','Raw data');
 hold on
 axis equal
 [Center,Radius] = sphereFit([mx my mz]);
@@ -146,19 +147,23 @@ x = x*Radius + Center(1);
 y = y*Radius + Center(2);
 z = z*Radius + Center(3);
 lightGrey = 0.8*[1 1 1]; % It looks better if the lines are lighter
-surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey)
+surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey,...
+        'DisplayName','Spherical regression')
 
 mx = mx-Center(1);
 my = my-Center(2);
 mz = mz-Center(3);
 
-scatter3(mx, my, mz,'.','r');
+scatter3(mx, my, mz,'.','r','DisplayName','Centered data');
 [x,y,z] = sphere(50);
 x = x*Radius;
 y = y*Radius;
 z = z*Radius;
 lightGrey = 0.8*[0 1 0]; % It looks better if the lines are lighter
-surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey)
+surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey,...
+        'DisplayName','Spherical regression')
+legend show
+
 
 figure(3)
 subplot(3,1,1)
@@ -170,12 +175,12 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 title('Magnetic fields')
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,2)
 plot(timeMillis,my,'Linewidth',1.5)
@@ -186,11 +191,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,3)
 plot(timeMillis,mz,'Linewidth',1.5)
@@ -201,11 +206,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 %% Plots of gyro on three axis
 
@@ -219,12 +224,12 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 title('Angular rates')
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,2)
 plot(timeMillis,gy,'Linewidth',1.5)
@@ -235,11 +240,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,3)
 plot(timeMillis,gz,'Linewidth',1.5)
@@ -250,11 +255,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 %% Plots of acceleration on three axis
 
@@ -268,12 +273,12 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 title('Accelarations')
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,2)
 plot(timeMillis,ayG,'Linewidth',1.5)
@@ -284,11 +289,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(3,1,3)
 plot(timeMillis,azG,'Linewidth',1.5)
@@ -299,11 +304,11 @@ xlim([minMillis maxMillis]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 %% Relevant Plots
 
@@ -317,11 +322,11 @@ ylim([-50 100]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(4,1,2)
 plot(timeMillis,press,'Linewidth',1.5)
@@ -331,11 +336,11 @@ xlabel('Time [ms]');
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(4,1,3)
 plot(timeMillis,alt,'Linewidth',1.5)
@@ -345,11 +350,11 @@ xlabel('Time [ms]');
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on
 
 subplot(4,1,4)
 plot(timeMillis(1:end-1),speed,'Linewidth',1.5)
@@ -359,8 +364,8 @@ xlabel('Time [ms]');
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
-    vline(tABcond1,'k','BrakesCond1')
-    vline(tABcond2,'k','BrakesCond2')
+    vline(tABcond1,'k','Brakes')
     vline(tPara,'g--','Para')
 end
 set(gca,'fontsize', 16);
+grid on

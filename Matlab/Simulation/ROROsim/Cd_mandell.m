@@ -81,9 +81,9 @@ function [Cd]=Cd_mandell(roro)
     B = Re_c*(0.074/Re^(0.2) - 1.328/sqrt(Re));
 
     if (Re < Re_c)
-        Cf =  1.328/sqrt(Re);
+        Cf = 1.328/sqrt(Re);
     else
-        Cf=0.074/Re^(0.2)-B/Re;
+        Cf = 0.074/Re^(0.2)-B/Re;
     end
 
     %  Viscous friction ROCKET FINS Cf_f
@@ -92,9 +92,9 @@ function [Cd]=Cd_mandell(roro)
     B_f = Re_c*(0.074/Re_f^(0.2) - 1.328/sqrt(Re_f));
 
     if (Re_f < Re_c)
-        Cf_f =  1.328/sqrt(Re_f);
+        Cf_f = 1.328/sqrt(Re_f);
     else
-        Cf_f=0.074/Re_f^(0.2)-B_f/Re_f;
+        Cf_f = 0.074/Re_f^(0.2)-B_f/Re_f;
     end
     
     %% -------Drag at zero AoA-------

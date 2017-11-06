@@ -51,8 +51,8 @@ legend( 'alt baro', 'acc', 'speed acc', 'alt acc')
 xlabel('Time [ms]');
 vline(t0,'r--','Burn')
 vline(tBurnout,'r--','Burnout')
-vline(tABcond1,'k','BrakesCond1')
-vline(tABcond2,'k','BrakesCond2')
+vline(tABcond1,'k','BrakesCond')
+%vline(tABcond2,'k','BrakesCond2')
 vline(tApogee,'b','Apogee')
 vline(tPara,'g--','Para')
 set(gca,'fontsize', 16);
@@ -73,7 +73,7 @@ title('Simulated acceleration vs Recorded acceleration');
 tAB = timeMillis(i);
 
 % keep only the flight phase with the airbrakes
-cut2 = timeMillis>tAB&timeMillis<(tPara -20); %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
+cut2 = timeMillis>tAB&timeMillis<(tPara-20); %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
 ayG = ayG(cut2);
 speedacc = speedacc(cut2);
 figure

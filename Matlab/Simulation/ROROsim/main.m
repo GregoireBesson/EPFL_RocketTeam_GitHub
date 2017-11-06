@@ -18,8 +18,8 @@ env = environement(1400, 42, 86200, roro );  % (350, 15, 99490, roro );
 %% Phase: Accent
 tend=30;
 [t, state] = accent_calc(roro,tend);
-%%
-% figure(1);
+
+figure(1);
 plot(t,state(:,3))
 xlabel('Time(s)')
 ylabel('Height (m)')
