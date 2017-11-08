@@ -8,7 +8,7 @@ const int button = 3;
 const int led = 8;
 const int error_led = 7;
 const int brakes_pin = 6;
-const unsigned long period = 20 * 1000; // period in microseconds
+const unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
 
 Adafruit_BMP280 bmp; // I2C
@@ -44,13 +44,13 @@ void setup() {
 #if VERBOSE
         Serial.println(F("Could not find a valid BMP280 sensor, check wiring! (or adress!!!)"));
 #endif
-        while (1);
+        while (true) {
+            bip(50);
+        }
     }
 
-    //seaLevelhPa = bmp.readPressure() / (100 * pow(1 - (altInit / 44330), 1 / 0.1903));
-
 #if VERBOSE
-    Serial.print("\nInitializing SD card... ");
+    Serial.print(F("\nInitializing SD card... "));
 #endif
     pinMode(chipSelect, OUTPUT);
     pinMode(led, OUTPUT);
@@ -67,40 +67,41 @@ void setup() {
         // open the file. note that only one file can be opened at a time,
         // so you have to close this one before opening another.
 
-        myFile = SD.open("data/test.txt", FILE_WRITE);
+        myFile = SD.open(F("data/test.txt"), FILE_WRITE);
         if (myFile) {
             writeToSD = true;
 #if VERBOSE
-            Serial.println("initialization of SD card file succeeded!");
+            Serial.println(F("initialization of SD card file succeeded!"));
 #endif
         }
     }
 
     if (!writeToSD) {
 #if VERBOSE
-        Serial.println("Error during the initialization of SD Card.");
+        Serial.println(F("Error during the initialization of SD Card."));
 #endif
         digitalWrite(error_led, HIGH);
     }
 
 
 #if VERBOSE
-    Serial.println("Press the button to start data logging");
+    Serial.println(F("Press the button to start data logging"));
 #endif
-    while(digitalRead(button));
+    /*
+    while (digitalRead(button));
     delay(10);
-    while(!digitalRead(button));
-
+    while (!digitalRead(button));
+*/
     // send visual and audio feedback when the logging starts
     digitalWrite(led, HIGH);
     bip(800);
 
     // if the file opened okay, write to it:
-    myFile.println("START");
-    String temp = "t[ms],\t\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\tpres[hPa]";
+    myFile.println(F("START"));
+    String temp = F("t[ms],\t\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\tpres[hPa]");
     myFile.println(temp);
 #if VERBOSE
-    Serial.println("START");
+    Serial.println(F("START"));
     Serial.println(temp);
 #endif
     //telemSerial->println("Telemetry starts now");
@@ -109,7 +110,7 @@ void setup() {
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
 #if VERBOSE
-    Serial.println("Ready");
+    Serial.println(F("Ready"));
 #endif
 }
 
@@ -119,25 +120,28 @@ long int cpt = 0;
 // Main loop, read and display data
 void loop() {
     static unsigned long measurement_time = 0;
+    while (micros() - measurement_time < period){
+        delayMicroseconds(100);
+    }
+    measurement_time = static_cast<uint32_t>(micros());
+
     static uint8_t counter = 0;
 
     // Stop logging and switch off the LED when button is pushed
     if (!digitalRead(button) & writeToSD) {
-        myFile.println("STOP");
+        myFile.println(F("STOP"));
         // close the file:
         myFile.close();
 #if VERBOSE
-        Serial.println("File correctly saved.");
+        Serial.println(F("File correctly saved."));
 #endif
         writeToSD = false;
         digitalWrite(led, LOW);
         bip(500);
         delay(500);
         bip(500);
-
-        // infinite loop to stop the sampling after closing the file
-        while(true);
     }
+
 
     // ____________________________________
     // :::  accelerometer and gyroscope :::
@@ -146,20 +150,22 @@ void loop() {
     I2Cread(MPU9250_ADDRESS, 0x3B, 14, bufIMU);
 
     // array containing the data (acc, gyro, mag)
-    int16_t tab_data[9];
 
-    tab_data[0] = bufIMU[0] << 8 | bufIMU[1]; // ax
-    tab_data[1] = bufIMU[2] << 8 | bufIMU[3];  // ay
-    tab_data[2] = bufIMU[4] << 8 | bufIMU[5];  // az
+    measurements data{};
 
-    tab_data[3] = bufIMU[8] << 8 | bufIMU[9];  // gx
-    tab_data[4] = bufIMU[10] << 8 | bufIMU[11];// gy
-    tab_data[5] = bufIMU[12] << 8 | bufIMU[13];// gz
+    data.ax = bufIMU[0] << 8 | bufIMU[1]; // ax
+    data.ay = bufIMU[2] << 8 | bufIMU[3];  // ay
+    data.az = bufIMU[4] << 8 | bufIMU[5];  // az
+
+    data.gx = bufIMU[8] << 8 | bufIMU[9];  // gx
+    data.gy = bufIMU[10] << 8 | bufIMU[11];// gy
+    data.gz = bufIMU[12] << 8 | bufIMU[13];// gz
 
     // _____________________
     // :::  Magnetometer :::
 
     // Read register Status 1 and wait for the DRDY: Data Ready
+
     uint8_t ST1;
     do {
         I2Cread(MAG_ADDRESS, 0x02, 1, &ST1);
@@ -171,109 +177,110 @@ void loop() {
     // request for the following mag measurement
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
-    tab_data[6] = bufMag[3] << 8 | bufMag[2]; // mx
-    tab_data[7] = bufMag[1] << 8 | bufMag[0]; // my
-    tab_data[8] = bufMag[5] << 8 | bufMag[4]; // mz
+    data.mx = bufMag[3] << 8 | bufMag[2]; // mx
+    data.my = bufMag[1] << 8 | bufMag[0]; // my
+    data.mz = bufMag[5] << 8 | bufMag[4]; // mz
 
     float pressure = bmp.readPressure();
     //float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
 
-    measurement_time = static_cast<uint32_t>(micros());
+    String dataStringSD = measurement_time + DELIMITER
+                          + data.ax + DELIMITER
+                          + data.ay + DELIMITER
+                          + data.az + DELIMITER
+                          + data.gx + DELIMITER
+                          + data.gy + DELIMITER
+                          + data.gz + DELIMITER
+                          + data.mx + DELIMITER
+                          + data.my + DELIMITER
+                          + data.mz + DELIMITER
+                          + pressure;
 
-    uint8_t i = 0;
     if (writeToSD) {
-      myFile.print(measurement_time + DELIMITER);
-      for(i=0;i<9;i++){
-        myFile.print(tab_data[i] + DELIMITER);
-      }
-      myFile.println(pressure);
+        myFile.println(dataStringSD);
     }
 
 #if VERBOSE
-  Serial.print(measurement_time + DELIMITER);
-  for(i=0;i<9;i++){
-    Serial.print(tab_data[i] + DELIMITER);
-  }
-  Serial.println(pressure);
+    Serial.println(dataStringSD);
 #endif
 
     // start the Finite State Machine
     static char state = READY;
     static long lastState = 0;
 
-    switch(state){
-      case READY:
+    switch (state) {
+        case READY:
 
-        //digitalWrite(13, HIGH);
+            //digitalWrite(13, HIGH);
 
-        // détection d'accélération
-        // TODO ajputer un temps d'accélération, peut etre avec un état intermédiaire
-        // TODO conversion de l'acceleration
-        // WARN sens de l'accélération positive
+            // détection d'accélération
+            // TODO ajputer un temps d'accélération, peut etre avec un état intermédiaire
+            // TODO conversion de l'acceleration
+            // WARN sens de l'accélération positive
 
-        if (abs(tab_data[1]) > ACC_THRESHOLD){
-          state = MOTOR;
-          myFile.println("M");
-        #if VERBOSE
-          Serial.println("MOTOR");
-        #endif
-          lastState = millis();
-        }
-        break;
-
-      case MOTOR:
-        //digitalWrite(13, LOW);
-
-        // timer ou fin de l'accélération
-        if (abs(tab_data[1]) < ACC_THRESHOLD){
-          if(millis()-lastState < 500){
-            myFile.println("FS");
-          #if VERBOSE
-            Serial.println("False start");
-          #endif
-            state = READY;
+            if (abs(data.ay) > ACC_THRESHOLD) {
+                state = MOTOR;
+                myFile.println(F("M"));
+#if VERBOSE
+                Serial.println(F("MOTOR"));
+#endif
+                lastState = millis();
+            }
             break;
-          }
-        }
-        if(millis()-lastState > 2500){ // increase this delay
-          lastState = millis();
-          state = OPEN;
-          myFile.println("O");
-        #if VERBOSE
-          Serial.println("OPEN");
-        #endif
-        }
-        break;
 
-      case OPEN:
-        digitalWrite(brakes_pin, HIGH);
+        case MOTOR:
+            //digitalWrite(13, LOW);
 
-        if (millis()-lastState > 800 && counter<3){
-          counter++;
-          state = CLOSE;
-          myFile.println("C");
-          #if VERBOSE
-          Serial.println("CLOSE");
-          #endif
-          lastState = millis();
-        }
-        break;
-      case CLOSE:
-        digitalWrite(brakes_pin, LOW);
+            // timer ou fin de l'accélération
+            if (abs(data.ay) < ACC_THRESHOLD) {
+                if (millis() - lastState < 500) {
+                    myFile.println(F("FS"));
+#if VERBOSE
+                    Serial.println(F("False start"));
+#endif
+                    state = READY;
+                    break;
+                }
+            }
+            if (millis() - lastState > 2500) { // increase this delay
+                lastState = millis();
+                state = OPEN;
+                myFile.println(F("O"));
+#if VERBOSE
+                Serial.println(F("OPEN"));
+#endif
+            }
+            break;
 
-        if (millis()-lastState > 800){
-          state = OPEN;
-          myFile.println("O");
-          #if VERBOSE
-          Serial.println("OPEN");
-          #endif
-          lastState = millis();
-        }
-        break;
-      #if VERBOSE
-        Serial.println("PHASE2");
-      #endif
-        break;
+        case OPEN:
+            digitalWrite(brakes_pin, HIGH);
+
+            if (millis() - lastState > 800 && counter < 3) {
+                counter++;
+                state = CLOSE;
+                myFile.println(F("C"));
+#if VERBOSE
+                Serial.println(F("CLOSE"));
+#endif
+                lastState = millis();
+            }
+            break;
+        case CLOSE:
+            digitalWrite(brakes_pin, LOW);
+
+            if (millis() - lastState > 800) {
+                state = OPEN;
+                myFile.println(F("O"));
+#if VERBOSE
+                Serial.println(F("OPEN"));
+#endif
+                lastState = millis();
+            }
+            break;
+#if VERBOSE
+            Serial.println("PHASE2");
+#endif
+            break;
     }
 }
 
@@ -303,7 +310,7 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
 }
 
 void telem_write_uint32(uint32_t val) {
-    for (int8_t i = 3; i >= 0; --i) {
+    for (int8_t i = sizeof(uint32_t) - 1; i >= 0; --i) {
         telemSerial->write(val >> 8 * i);
     }
 }
@@ -315,13 +322,13 @@ void telem_write_uint16(uint32_t val) {
 }
 
 void bip(int duration) {
-  // send a bip when the logging starts
-  int period = 100;
-  int count = duration*5;
-  for (int i = 0; i < count; i++) {
-    digitalWrite(BUZZER, HIGH);
-    delayMicroseconds(period);
-    digitalWrite(BUZZER, LOW);
-    delayMicroseconds(period);
-  }
+    // send a bip when the logging starts
+    int period = 100;
+    int count = duration * 5;
+    for (int i = 0; i < count; i++) {
+        digitalWrite(BUZZER, HIGH);
+        delayMicroseconds(period);
+        digitalWrite(BUZZER, LOW);
+        delayMicroseconds(period);
+    }
 }

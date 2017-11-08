@@ -12,6 +12,17 @@
 #include <SoftwareSerial.h>
 #include <Adafruit_BMP280.h>
 
+struct measurements {
+    uint16_t ax, ay, az, gx, gy, gz, mx, my, mz;
+};
+
+enum State {
+    READY,
+    MOTOR,
+    OPEN,
+    CLOSE
+};
+
 void telem_write_uint32(uint32_t val);
 
 void telem_write_uint16(uint32_t val);
@@ -49,12 +60,6 @@ void bip(int duration);
 
 #define    BUZZER                    A0
 
-enum State{
-  READY,
-  MOTOR,
-  OPEN,
-  CLOSE
-};
 
 
 #endif //DATA_LOGGER_PIO_DATA_LOGGER_H
