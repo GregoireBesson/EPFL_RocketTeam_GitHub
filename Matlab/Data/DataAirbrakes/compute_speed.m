@@ -73,14 +73,14 @@ title('Simulated acceleration vs Recorded acceleration');
 tAB = timeMillis(i);
 
 % keep only the flight phase with the airbrakes
-cut2 = timeMillis>tAB&timeMillis<(tPara-20); %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
+cut2 = timeMillis>tAB&timeMillis<(tApogee); %j'ai enlevé 20 ms parce que le parachute fait un peu de la merde
 ayG = ayG(cut2);
 speedacc = speedacc(cut2);
 figure
 grid on
 hold on
 scatter(speedacc, ayG,'.');
-p = polyfit(speedacc, ayG, 4);
+p = polyfit(speedacc, ayG, 2);
 x = min(speedacc):.01:max(speedacc);
 f1 = polyval(p,x);
 plot(x,f1,'Linewidth',3);
