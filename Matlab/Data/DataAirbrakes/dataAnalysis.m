@@ -60,6 +60,10 @@ axG =  ax*accFactorUnits;
 ayG = -ay*accFactorUnits;
 azG =  az*accFactorUnits;
 
+%magnetometer calibration
+[mx, my, mz] = cal_mag(mx, my, mz);
+%gyroscope calibraiton
+[gx, gy, gz] = cal_gyr(gx, gy, gz);
 %removal of aberrant values on the first run
 if (firstRun)
     k = find(press>950);
@@ -89,7 +93,7 @@ speed = (altFiltered(2:end)-altFiltered(1:end-1))./...
 
 displayInfos = true;
 
-figure(1)
+figure(2)
 subplot(3,1,1)
 plot(timeMillis,temp,'Linewidth',1.5)
 ylabel('Temperature [°C]')
@@ -137,34 +141,6 @@ set(gca,'fontsize', 16);
 grid on
 
 %% Plots of magnetometers on three axis
-figure(2)
-scatter3(mx, my, mz,'.','DisplayName','Raw data');
-hold on
-axis equal
-[Center,Radius] = sphereFit([mx my mz]);
-[x,y,z] = sphere(50);
-x = x*Radius + Center(1);
-y = y*Radius + Center(2);
-z = z*Radius + Center(3);
-lightGrey = 0.8*[1 1 1]; % It looks better if the lines are lighter
-surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey,...
-        'DisplayName','Spherical regression')
-
-mx = mx-Center(1);
-my = my-Center(2);
-mz = mz-Center(3);
-
-scatter3(mx, my, mz,'.','r','DisplayName','Centered data');
-[x,y,z] = sphere(50);
-x = x*Radius;
-y = y*Radius;
-z = z*Radius;
-lightGrey = 0.8*[0 1 0]; % It looks better if the lines are lighter
-surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey,...
-        'DisplayName','Spherical regression')
-legend show
-
-
 figure(3)
 subplot(3,1,1)
 plot(timeMillis,mx,'Linewidth',1.5)
