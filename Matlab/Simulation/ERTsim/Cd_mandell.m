@@ -138,7 +138,7 @@ function [Cd]=Cd_mandell(roro)
     % Fin drag at angle alpha
     Cd_f_alpha = (1.2*A_fp*4/(pi*d_f^2) +3.12*(Kfb +Kbf-1)*A_fe*4/(pi*d_f^2))*alpha^2;
 
-    %% -------Totol Drag Coefficient-------
+    %% -------Total Drag Coefficient-------
     Cd = Cd0 + Cd_b_alpha + Cd_f_alpha;
     Cd = Cd/sqrt(1-M^2);
     CnXcp = roro.CnXcp;
