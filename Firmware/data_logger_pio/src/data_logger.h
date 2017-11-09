@@ -13,7 +13,7 @@
 #include <Adafruit_BMP280.h>
 
 struct measurements {
-    uint16_t ax, ay, az, gx, gy, gz, mx, my, mz;
+    int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
 };
 
 enum State {
@@ -23,9 +23,12 @@ enum State {
     CLOSE
 };
 
-void telem_write_uint32(uint32_t val);
 
-void telem_write_uint16(uint32_t val);
+void telem_write_uint32(uint32_t val, uint16_t *remainder);
+
+void telem_write_uint16(uint16_t val, uint16_t *remainder);
+
+void telem_write_uint8(uint8_t val, uint16_t *remainder);
 
 void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data);
 

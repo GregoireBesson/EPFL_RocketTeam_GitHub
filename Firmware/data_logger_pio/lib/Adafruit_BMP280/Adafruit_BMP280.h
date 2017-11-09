@@ -120,6 +120,12 @@ class Adafruit_BMP280_Unified : public Adafruit_Sensor
 
 */
 
+
+struct pressure_temperature {
+    float pressure;
+    float temperature;
+};
+
 class Adafruit_BMP280
 {
   public:
@@ -128,6 +134,7 @@ class Adafruit_BMP280
     bool  begin(uint8_t addr = BMP280_ADDRESS, uint8_t chipid = BMP280_CHIPID);
     float readTemperature(void);
     float readPressure(void);
+    pressure_temperature readPressureTemperature(void);
     float readAltitude(float seaLevelhPa = 1013.25);
 
   private:

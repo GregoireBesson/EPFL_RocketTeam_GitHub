@@ -1,6 +1,9 @@
 #include <avr/pgmspace.h>
 #include <Arduino.h>
+#include <CRC/SimpleCRC.h>
 #include "data_logger.h"
+#include "DatagramSpec.h"
+
 
 //select the chip (depend on the SD shield, put 10 for Adafruit)
 const int chipSelect = 10;
@@ -10,6 +13,8 @@ const int error_led = 7;
 const int brakes_pin = 6;
 const unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
+uint32_t sequenceNumber;
+
 
 Adafruit_BMP280 bmp; // I2C
 File myFile;
@@ -23,8 +28,9 @@ void setup() {
     DELIMITER = F(",\t");
 
     //Xbee serial: RX = digital pin 5, TX = digital pin 6
-    //telemSerial = new SoftwareSerial(5, 6);
-    //telemSerial->begin(57600);
+    telemSerial = new SoftwareSerial(5, 6);
+    telemSerial->begin(115200);
+    sequenceNumber = 0;
 
     // Arduino initialization
     Wire.begin();
@@ -120,7 +126,7 @@ long int cpt = 0;
 // Main loop, read and display data
 void loop() {
     static unsigned long measurement_time = 0;
-    while (micros() - measurement_time < period){
+    while (micros() - measurement_time < period) {
         delayMicroseconds(100);
     }
     measurement_time = static_cast<uint32_t>(micros());
@@ -142,6 +148,17 @@ void loop() {
         bip(500);
     }
 
+    uint16_t remainder = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
+    // Beginning of telemetry transmission:
+    for (size_t i = 0; i < PREAMBLE_SIZE; ++i) {
+        telemSerial->write(HEADER_PREAMBLE_FLAG);
+    }
+    telem_write_uint32(sequenceNumber++, &remainder);
+    telem_write_uint8(static_cast<uint8_t>(DatagramPayloadType::TELEMETRY), &remainder);
+    telemSerial->write(CONTROL_FLAG);
+
+    // Datagram PAYLOAD
+    telem_write_uint32(static_cast<uint32_t>(measurement_time), &remainder);
 
     // ____________________________________
     // :::  accelerometer and gyroscope :::
@@ -157,9 +174,17 @@ void loop() {
     data.ay = bufIMU[2] << 8 | bufIMU[3];  // ay
     data.az = bufIMU[4] << 8 | bufIMU[5];  // az
 
+    telem_write_uint16(data.ax, &remainder);
+    telem_write_uint16(data.ay, &remainder);
+    telem_write_uint16(data.az, &remainder);
+
     data.gx = bufIMU[8] << 8 | bufIMU[9];  // gx
     data.gy = bufIMU[10] << 8 | bufIMU[11];// gy
     data.gz = bufIMU[12] << 8 | bufIMU[13];// gz
+
+    telem_write_uint16(data.gx, &remainder);
+    telem_write_uint16(data.gy, &remainder);
+    telem_write_uint16(data.gz, &remainder);
 
     // _____________________
     // :::  Magnetometer :::
@@ -181,8 +206,25 @@ void loop() {
     data.my = bufMag[1] << 8 | bufMag[0]; // my
     data.mz = bufMag[5] << 8 | bufMag[4]; // mz
 
-    float pressure = bmp.readPressure();
-    //float altitude = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
+
+    telem_write_uint16(data.mx, &remainder);
+    telem_write_uint16(data.my, &remainder);
+    telem_write_uint16(data.mz, &remainder);
+
+
+
+
+    auto pressureTemperature = bmp.readPressureTemperature();
+    float_cast pressure = {.fl = pressureTemperature.pressure};
+    float_cast temperature = {.fl = pressureTemperature.temperature};
+
+    telem_write_uint32(temperature.uint32, &remainder);
+    telem_write_uint32(pressure.uint32, &remainder);
+
+    auto crc = SimpleCRC::Finalize(remainder);
+    telemSerial->write(crc >> 8);
+    telemSerial->write(crc);
+
 
     String dataStringSD = measurement_time + DELIMITER
                           + data.ax + DELIMITER
@@ -194,7 +236,7 @@ void loop() {
                           + data.mx + DELIMITER
                           + data.my + DELIMITER
                           + data.mz + DELIMITER
-                          + pressure;
+                          + pressure.fl;
 
     if (writeToSD) {
         myFile.println(dataStringSD);
@@ -309,17 +351,32 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
     Wire.endTransmission();
 }
 
-void telem_write_uint32(uint32_t val) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+
+void telem_write_uint32(uint32_t val, uint16_t *remainder) {
     for (int8_t i = sizeof(uint32_t) - 1; i >= 0; --i) {
-        telemSerial->write(val >> 8 * i);
+        uint8_t byte = val >> 8 * i;
+        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
+        telemSerial->write(byte);
     }
 }
 
-void telem_write_uint16(uint32_t val) {
-    for (int8_t i = 3; i >= 0; --i) {
-        telemSerial->write(val >> 8 * i);
+void telem_write_uint16(uint16_t val, uint16_t *remainder) {
+    for (int8_t i = sizeof(uint16_t) - 1; i >= 0; --i) {
+        uint8_t byte = val >> 8 * i;
+        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
+        telemSerial->write(byte);
     }
 }
+
+void telem_write_uint8(uint8_t val, uint16_t *remainder) {
+    *remainder = SimpleCRC::CalculateRemainderFromTable(val, *remainder);
+    telemSerial->write(val);
+}
+
+#pragma clang diagnostic pop
+
 
 void bip(int duration) {
     // send a bip when the logging starts
