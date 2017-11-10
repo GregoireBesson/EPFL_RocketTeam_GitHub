@@ -3,14 +3,14 @@
 #include <CRC/SimpleCRC.h>
 #include "data_logger.h"
 #include "DatagramSpec.h"
-
+//#include "pitot/pitot.h"
 
 //select the chip (depend on the SD shield, put 10 for Adafruit)
 const int chipSelect = 10;
 const int button = 3;
 const int led = 8;
 const int error_led = 7;
-const int brakes_pin = 6;
+const int brakes_pin = 4;
 const unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
 uint32_t sequenceNumber;
@@ -170,7 +170,7 @@ void loop() {
 
     measurements data{};
 
-    data.ax = bufIMU[0] << 8 | bufIMU[1]; // ax
+    data.ax = bufIMU[0] << 8 | bufIMU[1];   // ax
     data.ay = bufIMU[2] << 8 | bufIMU[3];  // ay
     data.az = bufIMU[4] << 8 | bufIMU[5];  // az
 
@@ -211,15 +211,14 @@ void loop() {
     telem_write_uint16(data.my, &remainder);
     telem_write_uint16(data.mz, &remainder);
 
-
-
-
     auto pressureTemperature = bmp.readPressureTemperature();
     float_cast pressure = {.fl = pressureTemperature.pressure};
     float_cast temperature = {.fl = pressureTemperature.temperature};
 
     telem_write_uint32(temperature.uint32, &remainder);
     telem_write_uint32(pressure.uint32, &remainder);
+
+
 
     auto crc = SimpleCRC::Finalize(remainder);
     telemSerial->write(crc >> 8);
