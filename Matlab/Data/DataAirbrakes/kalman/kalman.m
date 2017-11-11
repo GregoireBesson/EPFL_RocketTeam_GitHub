@@ -31,16 +31,16 @@ classdef kalman <handle
             acc = (0.5*1.225*obj.x(2)^2*(0.0082*.3)+T)/m;
             % TODO ajouter aire brakes et CD brakes
 
-            F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc];
+            F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc]; %%%%%%%%%%%%%% pas sur de ce jacobien
 
-            x_hat = F * obj.x;
+            x_hat = F * obj.x;  %%%%%%%%%%%%%%%%%%%%%%%%%%% t'es sur Jacobien*vecteur d'etat = x_hat ?
             obj.P = F*obj.P*F' + obj.Q;
 
             y = z - obj.H * x_hat;   %x_hat(2)
             obj.S = obj.H*obj.P*obj.H' + obj.R;
-            K = obj.P * obj.H' * inv(obj.S);
+            K = obj.P * (obj.H')/(obj.S);
             obj.x = obj.x + K*y;
-            obj.P = (eye(3)-K*obj.H)*obj.P
+            obj.P = (eye(3)-K*obj.H)*obj.P;
             x = obj.x;
 
         end
