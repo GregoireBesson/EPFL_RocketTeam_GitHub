@@ -27,21 +27,17 @@ classdef kalman <handle
             % dt = period
             T = 1;
             m = 1;
-            m_dot = 1; % m_dot = (m_prev - m)/dt;
             
-            % TODO transmetre env.rho, roro.Aref et roro.Cd
+            % TODO transmetre env.rho et roro.Aref
             rho = 1.225;
             A_ref = 0.0082;
-            Cd = .3;
             
-            acc = (0.5*rho*obj.x(2)^2*(A_ref*Cd)+T-m_dot*obj.x(2)^2)/m;
+            acc = (0.5*rho*obj.x(2)^2*(A_ref*.3)+T)/m;
             % TODO ajouter aire brakes et CD brakes
 
-            % motion model that predicts the current state frome previous
-            x_hat = motion_model(obj, dt);
-            
-            % Jacobian of the motion model
-            F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc];
+            F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc]; %%%%%%%%%%%%%% pas sur de ce jacobien
+
+            x_hat = F * obj.x;  %%%%%%%%%%%%%%%%%%%%%%%%%%% t'es sur Jacobien*vecteur d'etat = x_hat ?
             obj.P = F*obj.P*F' + obj.Q;
 
             y = z - obj.H * x_hat;   %x_hat(2)
