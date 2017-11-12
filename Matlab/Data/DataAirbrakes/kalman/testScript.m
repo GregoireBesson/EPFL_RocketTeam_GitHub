@@ -23,5 +23,5 @@ for i = 1:10
     x(:,i)= update(kalman, z, .01);
 end
 
-plot(x)
+plot(x(1,:));
 
