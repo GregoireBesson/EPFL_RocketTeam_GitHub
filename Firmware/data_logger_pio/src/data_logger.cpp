@@ -211,9 +211,31 @@ void loop() {
     telem_write_uint16(data.my, &remainder);
     telem_write_uint16(data.mz, &remainder);
 
+    // pressure from BMP280
     auto pressureTemperature = bmp.readPressureTemperature();
     float_cast pressure = {.fl = pressureTemperature.pressure};
     float_cast temperature = {.fl = pressureTemperature.temperature};
+
+    // pressure from pitot tube
+    uint8_t bufPitot[2];
+    I2Cread_NoReg(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2, bufPitot);
+    uint16_t press = (((uint16_t)bufPitot[0]  << 8) | (uint16_t)bufPitot[1]) & 0x3fff;
+
+    uint8_t status = bufPitot[0] >> 6;
+
+    if (status != PRESSURE_SENSOR_STATUS_NORMAL && status != PRESSURE_SENSOR_STATUS_STALE_DATA) {
+        Serial.println("Error reading the pitot sensor");;
+    }
+
+    /* Pressure transfer function */
+    float p_press = ((float)press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                / (14745 - 1638) + PRESSURE_SENSOR2_MIN;
+
+    //static float pitot_press;
+    //if (diff_pressure_hi_res(&pitot_press) == -1){
+    //  Serial.println("Error reading the pitot sensor");
+    //}
+    Serial.println(p_press);
 
     telem_write_uint32(temperature.uint32, &remainder);
     telem_write_uint32(pressure.uint32, &remainder);
@@ -333,6 +355,14 @@ void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data) {
     Wire.write(Register);
     Wire.endTransmission();
 
+    // Read Nbytes
+    Wire.requestFrom(Address, Nbytes);
+    uint8_t index = 0;
+    while (Wire.available())
+        Data[index++] = Wire.read();
+}
+
+void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes, uint8_t *Data) {
     // Read Nbytes
     Wire.requestFrom(Address, Nbytes);
     uint8_t index = 0;

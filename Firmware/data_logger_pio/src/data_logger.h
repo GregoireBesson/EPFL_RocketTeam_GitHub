@@ -32,6 +32,8 @@ void telem_write_uint8(uint8_t val, uint16_t *remainder);
 
 void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data);
 
+void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes, uint8_t *Data);
+
 void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data);
 
 void bip(int duration);
@@ -59,6 +61,18 @@ void bip(int duration);
 #define    ACC_THRESHOLD              2000 //4175 //=20*208,77
 
 #define    BUZZER                     A0
+
+#define   DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR   0x58
+
+#define   PRESSURE_SENSOR_STATUS_NORMAL       0b00
+#define   PRESSURE_SENSOR_STATUS_COMMAND      0b01
+#define   PRESSURE_SENSOR_STATUS_STALE_DATA   0b10
+#define   PRESSURE_SENSOR_STATUS_DIAGNOSTIC   0b11
+
+
+/* SSCMRNN015PG5A3 0 - 15 psi*/
+#define   PRESSURE_SENSOR2_MAX                103421.f    /* [Pa] */
+#define   PRESSURE_SENSOR2_MIN                0.f         /* [Pa] */
 
 
 
