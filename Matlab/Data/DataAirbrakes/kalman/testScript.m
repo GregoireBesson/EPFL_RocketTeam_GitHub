@@ -17,11 +17,16 @@ Mass = 0; % mettre les valeurs de la masse ici
 kalman = kalman(init);
 
 x = zeros(3,10);
-for i = 1:10
+for i = 1:500
     % kalman.update(kalman, [acc speed alt], .01);
     z = [i; 2*i; 3*i];
     x(:,i)= update(kalman, z, .01);
 end
 
 plot(x(1,:));
+hold on
+plot(x(2,:));
+plot(x(3,:));
+
+
 
