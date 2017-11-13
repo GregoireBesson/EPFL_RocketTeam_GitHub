@@ -38,6 +38,8 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data);
 
 void bip(int duration);
 
+float velocityFromPitot(float delta_p);
+
 #define    MPU9250_ADDRESS            0x68
 #define    MAG_ADDRESS                0x0C
 

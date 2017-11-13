@@ -6,6 +6,7 @@
 //#include "pitot/pitot.h"
 
 //select the chip (depend on the SD shield, put 10 for Adafruit)
+const float rho = 1.225;  // air density at 15°C [kg/m^3]
 const int chipSelect = 10;
 const int button = 3;
 const int led = 8;
@@ -230,12 +231,9 @@ void loop() {
     /* Pressure transfer function */
     float p_press = ((float)press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
                 / (14745 - 1638) + PRESSURE_SENSOR2_MIN;
-
-    //static float pitot_press;
-    //if (diff_pressure_hi_res(&pitot_press) == -1){
-    //  Serial.println("Error reading the pitot sensor");
-    //}
+    float v_square = velocityFromPitot(p_press);
     Serial.println(p_press);
+    Serial.println(v_square);
 
     telem_write_uint32(temperature.uint32, &remainder);
     telem_write_uint32(pressure.uint32, &remainder);
@@ -406,9 +404,8 @@ void telem_write_uint8(uint8_t val, uint16_t *remainder) {
 
 #pragma clang diagnostic pop
 
-
+// send a bip when the logging starts
 void bip(int duration) {
-    // send a bip when the logging starts
     int period = 100;
     int count = duration * 5;
     for (int i = 0; i < count; i++) {
@@ -417,4 +414,11 @@ void bip(int duration) {
         digitalWrite(BUZZER, LOW);
         delayMicroseconds(period);
     }
+}
+
+// compute the squared velocity from the pressure difference
+float velocityFromPitot(float delta_p) {
+  float v_square;
+  v_square = 2*delta_p/rho;
+  return v_square;
 }
