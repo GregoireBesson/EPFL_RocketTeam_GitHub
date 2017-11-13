@@ -42,12 +42,12 @@ altacc = [altacc;0]; %0 avant ou apres?
 
 hold on
 grid on
-plot(timeMillis, alt,'Linewidth',1.5)
+%plot(timeMillis, alt,'Linewidth',1.5)
 plot(timeMillis, ayG,'Linewidth',1.5)
 plot(timeMillis, speedacc,'Linewidth',1.5)
 plot(timeMillis, altacc,'Linewidth',1.5)
 %plot(timeMillis, speedbaro,'Linewidth',1.5)
-legend( 'alt baro', 'acc', 'speed acc', 'alt acc')
+legend('Acc [m/s^2]', 'Velocity [m/s]', 'Altitude [m]')
 xlabel('Time [ms]');
 vline(t0,'r--','Burn')
 vline(tBurnout,'r--','Burnout')

@@ -49,12 +49,12 @@ tPara = 9198;
 timeMillis = timeMillis - tOffset;
 timeSec = timeMillis/1000;
 timeMin = timeSec/60;
-minMillis = -10000;
-maxMillis = 50000;
+minMillis = -1000;
+maxMillis = 15000;
 minSec = minMillis/1000;
 maxSec = maxMillis/1000;
 
-% radial acceleration from m/s^2 to g
+% radial acceleration from ? to m/s^2
 accFactorUnits = 1/208.77;
 axG =  ax*accFactorUnits;
 ayG = -ay*accFactorUnits;
@@ -144,7 +144,7 @@ grid on
 figure(3)
 subplot(3,1,1)
 plot(timeMillis,mx,'Linewidth',1.5)
-ylabel('m_x [?]')
+ylabel('m_x [\muT]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -160,7 +160,7 @@ grid on
 
 subplot(3,1,2)
 plot(timeMillis,my,'Linewidth',1.5)
-ylabel('m_y [g]')
+ylabel('m_y [\muT]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -175,7 +175,7 @@ grid on
 
 subplot(3,1,3)
 plot(timeMillis,mz,'Linewidth',1.5)
-ylabel('m_z [g]')
+ylabel('m_z [\muT]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -193,9 +193,9 @@ grid on
 figure(4)
 subplot(3,1,1)
 plot(timeMillis,gx,'Linewidth',1.5)
-ylabel('g_x [?]')
+ylabel('g_x [°/s]')
 xlabel('Time [ms]');
-xlim([minMillis maxMillis]);
+xlim([minMillis 9300]);
 %ylim([-50 100]);
 if(displayInfos)
     vline(t0,'r--','Burn')
@@ -209,9 +209,9 @@ grid on
 
 subplot(3,1,2)
 plot(timeMillis,gy,'Linewidth',1.5)
-ylabel('g_y [?]')
+ylabel('g_y [°/s]')
 xlabel('Time [ms]');
-xlim([minMillis maxMillis]);
+xlim([minMillis 9300]);
 %ylim([-50 100]);
 if(displayInfos)
     vline(t0,'r--','Burn')
@@ -224,9 +224,9 @@ grid on
 
 subplot(3,1,3)
 plot(timeMillis,gz,'Linewidth',1.5)
-ylabel('g_z [g]')
+ylabel('g_z [°/s]')
 xlabel('Time [ms]');
-xlim([minMillis maxMillis]);
+xlim([minMillis 9300]);
 %ylim([-50 100]);
 if(displayInfos)
     vline(t0,'r--','Burn')
@@ -242,7 +242,7 @@ grid on
 figure(5)
 subplot(3,1,1)
 plot(timeMillis,axG,'Linewidth',1.5)
-ylabel('a_x [g]')
+ylabel('a_x [m/s^2]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -258,7 +258,7 @@ grid on
 
 subplot(3,1,2)
 plot(timeMillis,ayG,'Linewidth',1.5)
-ylabel('a_y (Normal) [g]')
+ylabel('a_y (Normal) [m/s^2]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -273,7 +273,7 @@ grid on
 
 subplot(3,1,3)
 plot(timeMillis,azG,'Linewidth',1.5)
-ylabel('a_z(Radial) [g]')
+ylabel('a_z(Radial) [m/s^2]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 %ylim([-50 100]);
@@ -291,7 +291,7 @@ grid on
 figure(6)
 subplot(4,1,1)
 plot(timeMillis,ayG,'Linewidth',1.5)
-ylabel('a_y [g]')
+ylabel('a_y [m/s^2]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
 ylim([-50 100]);
