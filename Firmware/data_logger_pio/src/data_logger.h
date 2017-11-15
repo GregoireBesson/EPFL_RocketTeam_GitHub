@@ -24,11 +24,11 @@ enum State {
 };
 
 
-void telem_write_uint32(uint32_t val, uint16_t *remainder);
+void telem_write_uint32(uint32_t val);
 
-void telem_write_uint16(uint16_t val, uint16_t *remainder);
+void telem_write_uint16(uint16_t val);
 
-void telem_write_uint8(uint8_t val, uint16_t *remainder);
+void telem_write_uint8(uint8_t val);
 
 void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data);
 
@@ -37,6 +37,8 @@ void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes, uint8_t *Data);
 void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data);
 
 void bip(int duration);
+
+void serialLog(const String &str);
 
 float velocityFromPitot(float delta_p);
 
@@ -54,6 +56,7 @@ float velocityFromPitot(float delta_p);
 #define    ACC_FULL_SCALE_16_G        0x18
 
 #define    VERBOSE                    true
+#define    PITOT_TUBE                 false
 
 #define    TS                         0x40
 #define    AX                         0x20
@@ -75,7 +78,6 @@ float velocityFromPitot(float delta_p);
 /* SSCMRNN015PG5A3 0 - 15 psi*/
 #define   PRESSURE_SENSOR2_MAX                103421.f    /* [Pa] */
 #define   PRESSURE_SENSOR2_MIN                0.f         /* [Pa] */
-
 
 
 #endif //DATA_LOGGER_PIO_DATA_LOGGER_H

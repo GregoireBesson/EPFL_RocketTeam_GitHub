@@ -16,6 +16,8 @@ const unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
 uint32_t sequenceNumber;
 
+static uint8_t xbeeCrc = 0xff;
+static uint16_t payloadCrc = 0x00;
 
 Adafruit_BMP280 bmp; // I2C
 File myFile;
@@ -25,7 +27,6 @@ String DELIMITER;
 
 // Initializations
 void setup() {
-
     DELIMITER = F(",\t");
 
     //Xbee serial: RX = digital pin 5, TX = digital pin 6
@@ -48,17 +49,14 @@ void setup() {
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
     if (!bmp.begin()) {
-#if VERBOSE
-        Serial.println(F("Could not find a valid BMP280 sensor, check wiring! (or adress!!!)"));
-#endif
+        serialLog(F("Could not find a valid BMP280 sensor, check wiring! (or adress!!!)"));
         while (true) {
             bip(50);
         }
     }
 
-#if VERBOSE
-    Serial.print(F("\nInitializing SD card... "));
-#endif
+    serialLog(F("\nInitializing SD card... "));
+
     pinMode(chipSelect, OUTPUT);
     pinMode(led, OUTPUT);
     pinMode(brakes_pin, OUTPUT);
@@ -77,23 +75,17 @@ void setup() {
         myFile = SD.open(F("data/test.txt"), FILE_WRITE);
         if (myFile) {
             writeToSD = true;
-#if VERBOSE
-            Serial.println(F("initialization of SD card file succeeded!"));
-#endif
+            serialLog(F("initialization of SD card file succeeded!"));
         }
     }
 
     if (!writeToSD) {
-#if VERBOSE
-        Serial.println(F("Error during the initialization of SD Card."));
-#endif
+        serialLog(F("Error during the initialization of SD Card."));
         digitalWrite(error_led, HIGH);
     }
 
 
-#if VERBOSE
-    Serial.println(F("Press the button to start data logging"));
-#endif
+    serialLog(F("Press the button to start data logging"));
     /*
     while (digitalRead(button));
     delay(10);
@@ -149,17 +141,32 @@ void loop() {
         bip(500);
     }
 
+    //Beginning of Xbee API frame:
+    telemSerial->write(XBEE_START);
+
+    //Length (on 16 bits) = 14 + Payload size = 60
+    telemSerial->write(static_cast<uint8_t>(0x00));
+    telemSerial->write(static_cast<uint8_t>(0x3c));
+
+    for (uint8_t byte: XBEE_FRAME_OPTIONS) {
+        telemSerial->write(byte);
+    }
+    xbeeCrc = XBEE_FRAME_OPTIONS_CRC;
     uint16_t remainder = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
-    // Beginning of telemetry transmission:
+
+    // Beginning of telemetry payload:
     for (size_t i = 0; i < PREAMBLE_SIZE; ++i) {
         telemSerial->write(HEADER_PREAMBLE_FLAG);
+        xbeeCrc += HEADER_PREAMBLE_FLAG;
     }
-    telem_write_uint32(sequenceNumber++, &remainder);
-    telem_write_uint8(static_cast<uint8_t>(DatagramPayloadType::TELEMETRY), &remainder);
+
+    telem_write_uint32(sequenceNumber++);
+    telem_write_uint8(static_cast<uint8_t>(DatagramPayloadType::TELEMETRY));
     telemSerial->write(CONTROL_FLAG);
+    xbeeCrc += CONTROL_FLAG;
 
     // Datagram PAYLOAD
-    telem_write_uint32(static_cast<uint32_t>(measurement_time), &remainder);
+    telem_write_uint32(static_cast<uint32_t>(measurement_time));
 
     // ____________________________________
     // :::  accelerometer and gyroscope :::
@@ -175,17 +182,17 @@ void loop() {
     data.ay = bufIMU[2] << 8 | bufIMU[3];  // ay
     data.az = bufIMU[4] << 8 | bufIMU[5];  // az
 
-    telem_write_uint16(data.ax, &remainder);
-    telem_write_uint16(data.ay, &remainder);
-    telem_write_uint16(data.az, &remainder);
+    telem_write_uint16(data.ax);
+    telem_write_uint16(data.ay);
+    telem_write_uint16(data.az);
 
     data.gx = bufIMU[8] << 8 | bufIMU[9];  // gx
     data.gy = bufIMU[10] << 8 | bufIMU[11];// gy
     data.gz = bufIMU[12] << 8 | bufIMU[13];// gz
 
-    telem_write_uint16(data.gx, &remainder);
-    telem_write_uint16(data.gy, &remainder);
-    telem_write_uint16(data.gz, &remainder);
+    telem_write_uint16(data.gx);
+    telem_write_uint16(data.gy);
+    telem_write_uint16(data.gz);
 
     // _____________________
     // :::  Magnetometer :::
@@ -208,41 +215,54 @@ void loop() {
     data.mz = bufMag[5] << 8 | bufMag[4]; // mz
 
 
-    telem_write_uint16(data.mx, &remainder);
-    telem_write_uint16(data.my, &remainder);
-    telem_write_uint16(data.mz, &remainder);
+    telem_write_uint16(data.mx);
+    telem_write_uint16(data.my);
+    telem_write_uint16(data.mz);
 
     // pressure from BMP280
     auto pressureTemperature = bmp.readPressureTemperature();
     float_cast pressure = {.fl = pressureTemperature.pressure};
     float_cast temperature = {.fl = pressureTemperature.temperature};
 
+
+    telem_write_uint32(temperature.uint32);
+    telem_write_uint32(pressure.uint32);
+
+#if PITOT
+
     // pressure from pitot tube
     uint8_t bufPitot[2];
     I2Cread_NoReg(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2, bufPitot);
-    uint16_t press = (((uint16_t)bufPitot[0]  << 8) | (uint16_t)bufPitot[1]) & 0x3fff;
+    uint16_t press = (((uint16_t) bufPitot[0] << 8) | (uint16_t) bufPitot[1]) & 0x3fff;
 
     uint8_t status = bufPitot[0] >> 6;
 
     if (status != PRESSURE_SENSOR_STATUS_NORMAL && status != PRESSURE_SENSOR_STATUS_STALE_DATA) {
-        Serial.println("Error reading the pitot sensor");;
+        serialLog(F("Error reading the pitot sensor"));
     }
 
     /* Pressure transfer function */
-    float p_press = ((float)press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
-                / (14745 - 1638) + PRESSURE_SENSOR2_MIN;
-    float v_square = velocityFromPitot(p_press);
-    Serial.println(p_press);
+    float_cast p_press{.fl = ((float) press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                             / (14745 - 1638) + PRESSURE_SENSOR2_MIN};
+
+    telem_write_uint32(p_press.uint32);
+
+#if VERBOSE
+    float v_square = velocityFromPitot(p_press.fl);
+    Serial.println(p_press.fl);
     Serial.println(v_square);
-
-    telem_write_uint32(temperature.uint32, &remainder);
-    telem_write_uint32(pressure.uint32, &remainder);
-
+#endif
+#else
+    telem_write_uint32(0);
+#endif
 
 
     auto crc = SimpleCRC::Finalize(remainder);
-    telemSerial->write(crc >> 8);
-    telemSerial->write(crc);
+    telem_write_uint8(crc >> 8);
+    telem_write_uint8(crc);
+
+    xbeeCrc = static_cast<uint8_t >(0xFF) - xbeeCrc;
+    telemSerial->write(xbeeCrc);
 
 
     String dataStringSD = measurement_time + DELIMITER
@@ -381,24 +401,27 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 
-void telem_write_uint32(uint32_t val, uint16_t *remainder) {
+void telem_write_uint32(uint32_t val) {
     for (int8_t i = sizeof(uint32_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
+        xbeeCrc += val;
+        payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
         telemSerial->write(byte);
     }
 }
 
-void telem_write_uint16(uint16_t val, uint16_t *remainder) {
+void telem_write_uint16(uint16_t val) {
     for (int8_t i = sizeof(uint16_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
+        xbeeCrc += val;
+        payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
         telemSerial->write(byte);
     }
 }
 
-void telem_write_uint8(uint8_t val, uint16_t *remainder) {
-    *remainder = SimpleCRC::CalculateRemainderFromTable(val, *remainder);
+void telem_write_uint8(uint8_t val) {
+    xbeeCrc += val;
+    payloadCrc = SimpleCRC::CalculateRemainderFromTable(val, payloadCrc);
     telemSerial->write(val);
 }
 
@@ -418,7 +441,12 @@ void bip(int duration) {
 
 // compute the squared velocity from the pressure difference
 float velocityFromPitot(float delta_p) {
-  float v_square;
-  v_square = 2*delta_p/rho;
-  return v_square;
+    float v_square = 2 * delta_p / rho;
+    return v_square;
+}
+
+void serialLog(const String &str) {
+#if VERBOSE
+    Serial.println(str);
+#endif
 }
