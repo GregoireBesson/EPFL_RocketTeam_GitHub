@@ -246,13 +246,6 @@ void loop() {
 
     //telem_write_uint32(p_press.uint32);
 
-#if VERBOSE
-    Serial.println(delta_p);
-#endif
-#else
-    telem_write_uint32(0);
-#endif
-
 
     auto crc = SimpleCRC::Finalize(payloadCrc);
     telem_write_uint8(crc >> 8);
@@ -271,7 +264,7 @@ void loop() {
                           + data.gz + DELIMITER
                           + data.mx + DELIMITER
                           + data.my + DELIMITER
-                          + data.mz + DELIMITER;
+                          + data.mz + DELIMITER
                           + pressure.fl + DELIMITER
                           + delta_p;
 
