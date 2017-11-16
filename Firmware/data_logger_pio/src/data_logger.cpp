@@ -149,7 +149,7 @@ void loop() {
         telemSerial->write(byte);
     }
     xbeeCrc = XBEE_FRAME_OPTIONS_CRC;
-    uint16_t remainder = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
+    payloadCrc = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
 
     // Beginning of telemetry payload:
     for (size_t i = 0; i < PREAMBLE_SIZE; ++i) {
@@ -254,11 +254,11 @@ void loop() {
 #endif
 
 
-    auto crc = SimpleCRC::Finalize(remainder);
+    auto crc = SimpleCRC::Finalize(payloadCrc);
     telem_write_uint8(crc >> 8);
     telem_write_uint8(crc);
 
-    xbeeCrc = static_cast<uint8_t >(0xFF) - xbeeCrc;
+    xbeeCrc = static_cast<uint8_t >(0xff) - xbeeCrc;
     telemSerial->write(xbeeCrc);
 
 
@@ -404,34 +404,52 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
     Wire.endTransmission();
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconversion"
+void sendTelemetryByte(uint8_t byte) {
+    uint8_t toSend = 0;
+    if ((toSend = escapedCharacter(byte)) != 0) {
+        //We need to escape the character:
+        telemSerial->write(XBEE_ESCAPE);
+        telemSerial->write(toSend);
+    } else {
+        telemSerial->write(byte);
+    }
+    xbeeCrc += byte;
+    payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
+
+}
+
+uint8_t escapedCharacter(uint8_t byte) {
+    switch (byte) {
+        case 0x7e:
+            return 0x53;
+        case 0x7d:
+            return 0x5d;
+        case 0x11:
+            return 0x31;
+        case 0x13:
+            return 0x33;
+        default:
+            return 0x00;
+    }
+}
 
 void telem_write_uint32(uint32_t val) {
     for (int8_t i = sizeof(uint32_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        xbeeCrc += val;
-        payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
-        telemSerial->write(byte);
+        sendTelemetryByte(byte);
     }
 }
 
 void telem_write_uint16(uint16_t val) {
     for (int8_t i = sizeof(uint16_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        xbeeCrc += val;
-        payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
-        telemSerial->write(byte);
+        sendTelemetryByte(byte);
     }
 }
 
 void telem_write_uint8(uint8_t val) {
-    xbeeCrc += val;
-    payloadCrc = SimpleCRC::CalculateRemainderFromTable(val, payloadCrc);
-    telemSerial->write(val);
+    sendTelemetryByte(val);
 }
-
-#pragma clang diagnostic pop
 
 // send a bip when the logging starts
 void bip(int duration) {

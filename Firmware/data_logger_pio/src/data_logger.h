@@ -47,6 +47,10 @@ void telem_write_uint16(uint16_t val);
 
 void telem_write_uint8(uint8_t val);
 
+uint8_t escapedCharacter(uint8_t byte);
+
+void sendTelemetryByte(uint8_t byte);
+
 void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data);
 
 void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes ,uint8_t *Data);
