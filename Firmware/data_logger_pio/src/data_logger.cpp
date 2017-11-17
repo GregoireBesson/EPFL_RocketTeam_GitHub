@@ -7,12 +7,13 @@
 
 //select the chip (depend on the SD shield, put 10 for Adafruit)
 const float rho = 1.225;  // air density at 15°C [kg/m^3]
-const unsigned long period = 10 * 1000; // period in microseconds
+constexpr unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
 uint32_t sequenceNumber;
 
 static uint8_t xbeeCrc = 0xff;
 static uint16_t payloadCrc = 0x00;
+static uint8_t packetGroupIndex = 0;
 
 Adafruit_BMP280 bmp; // I2C
 File myFile;
@@ -30,14 +31,14 @@ void setup() {
     sequenceNumber = 0;
 
     // Arduino initialization
-    if( !i2c_init() ) {
-      serialLog(F("Error during the initialization of I2C"));
+    if (!i2c_init()) {
+        serialLog(F("Error during the initialization of I2C"));
     }
 
     Wire.begin();
     Serial.begin(115200);
 
-  #if GY_91
+#if GY_91
     // Configure gyroscope range
     I2CwriteByte(MPU9250_ADDRESS, 27, GYRO_FULL_SCALE_2000_DPS);
     // Configure accelerometers range
@@ -139,17 +140,20 @@ void loop() {
         bip(500);
     }
 
-    //Beginning of Xbee API frame:
-    telemSerial->write(XBEE_START);
+    if (packetGroupIndex++ == 0) {
+        //Beginning of Xbee API frame:
+        telemSerial->write(XBEE_START);
 
-    //Length (on 16 bits) = 14 + Payload size = 60
-    telemSerial->write(static_cast<uint8_t>(0x00));
-    telemSerial->write(static_cast<uint8_t>(0x3c));
+        //Length (on 16 bits) = 14 +  3 * Payload size = 146 = 0x92
+        telemSerial->write(static_cast<uint8_t>(0x00));
+        telemSerial->write(static_cast<uint8_t>(0x92));
 
-    for (uint8_t byte: XBEE_FRAME_OPTIONS) {
-        telemSerial->write(byte);
+        for (uint8_t byte: XBEE_FRAME_OPTIONS) {
+            telemSerial->write(byte);
+        }
+        xbeeCrc = XBEE_FRAME_OPTIONS_CRC;
     }
-    xbeeCrc = XBEE_FRAME_OPTIONS_CRC;
+
     payloadCrc = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
 
     // Beginning of telemetry payload:
@@ -238,20 +242,24 @@ void loop() {
 
     Wire.requestFrom(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2);
     uint16_t delta_p = (((uint16_t) Wire.read() <<8) | (uint16_t) Wire.read()) & 0x3fff;
+    telem_write_uint16(delta_p);
 
     /* Pressure transfer function */
-    //float_cast p_press{.fl = ((float) press - 1652) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
-                            // / (14745 - 1652) + PRESSURE_SENSOR2_MIN};
-
-    //telem_write_uint32(p_press.uint32);
+    //float_cast p_press{.fl = ((float) press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                            // / (14745 - 1638) + PRESSURE_SENSOR2_MIN};
+#else
+    telem_write_uint16(0);
 #endif
 
     auto crc = SimpleCRC::Finalize(payloadCrc);
     telem_write_uint8(crc >> 8);
     telem_write_uint8(crc);
 
-    xbeeCrc = static_cast<uint8_t >(0xff) - xbeeCrc;
-    telemSerial->write(xbeeCrc);
+    if (packetGroupIndex == 3) {
+        xbeeCrc = static_cast<uint8_t >(0xff) - xbeeCrc;
+        telemSerial->write(xbeeCrc);
+        packetGroupIndex = 0;
+    }
 
 
     String dataStringSD = measurement_time + DELIMITER
@@ -265,8 +273,11 @@ void loop() {
                           + data.my + DELIMITER
                           + data.mz + DELIMITER
                           + pressure.fl + DELIMITER
-                          + delta_p;
-
+#if PITOT_TUBE
+    + delta_p;
+#else
+    ;
+#endif
     if (writeToSD) {
         myFile.println(dataStringSD);
     }
@@ -386,7 +397,7 @@ void SoftI2Cread2Bytes(uint8_t Address, uint8_t *Data) {
     i2c_stop();
 }
 
-void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes ,uint8_t *Data) {
+void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes, uint8_t *Data) {
     // Read Nbytes
     Wire.requestFrom(Address, Nbytes);
     uint8_t index = 0;
