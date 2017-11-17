@@ -245,8 +245,8 @@ void loop() {
     telem_write_uint16(delta_p);
 
     /* Pressure transfer function */
-    //float_cast p_press{.fl = ((float) press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
-                            // / (14745 - 1638) + PRESSURE_SENSOR2_MIN};
+    //float_cast p_press{.fl = ((float) press - 1652) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                            // / (14745 - 1652) + PRESSURE_SENSOR2_MIN};
 #else
     telem_write_uint16(0);
 #endif
