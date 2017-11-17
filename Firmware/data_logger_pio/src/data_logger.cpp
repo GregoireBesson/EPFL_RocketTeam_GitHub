@@ -242,10 +242,8 @@ void loop() {
     //float_cast p_press{.fl = ((float) press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
                             // / (14745 - 1638) + PRESSURE_SENSOR2_MIN};
 
-
-
     //telem_write_uint32(p_press.uint32);
-
+#endif
 
     auto crc = SimpleCRC::Finalize(payloadCrc);
     telem_write_uint8(crc >> 8);
