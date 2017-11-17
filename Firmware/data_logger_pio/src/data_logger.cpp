@@ -81,16 +81,17 @@ void setup() {
 
     if (!writeToSD) {
         serialLog(F("Error during the initialization of SD Card."));
+        while(true);
         //digitalWrite(ERROR_LED_PIN, HIGH);
     }
 
 
     serialLog(F("Press the button to start data logging"));
-    /*
+
     while (digitalRead(BUTTON_PIN));
     delay(10);
     while (!digitalRead(BUTTON_PIN));
-*/
+
     // send visual and audio feedback when the logging starts
     //digitalWrite(SD_LED_PIN, HIGH);
     bip(800);
@@ -239,8 +240,8 @@ void loop() {
     uint16_t delta_p = (((uint16_t) Wire.read() <<8) | (uint16_t) Wire.read()) & 0x3fff;
 
     /* Pressure transfer function */
-    //float_cast p_press{.fl = ((float) press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
-                            // / (14745 - 1638) + PRESSURE_SENSOR2_MIN};
+    //float_cast p_press{.fl = ((float) press - 1652) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                            // / (14745 - 1652) + PRESSURE_SENSOR2_MIN};
 
     //telem_write_uint32(p_press.uint32);
 #endif
@@ -334,6 +335,16 @@ void loop() {
 #endif
                 lastState = millis();
             }
+            else if(millis()-lastState > 1000){
+                myFile.println(F("Safety"));
+                myFile.close();
+                //digitalWrite(BRAKES_PIN, LOW);
+                myFile = SD.open(F("data/test.txt"), FILE_WRITE);
+    #if VERBOSE
+                Serial.println(F("File_Close/Open"));
+    #endif
+                state = END;
+            }
             break;
         case CLOSE:
             digitalWrite(BRAKES_PIN, LOW);
@@ -347,9 +358,7 @@ void loop() {
                 lastState = millis();
             }
             break;
-#if VERBOSE
-            Serial.println("PHASE2");
-#endif
+        case END:
             break;
     }
 }
