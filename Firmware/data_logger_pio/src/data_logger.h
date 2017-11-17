@@ -37,7 +37,8 @@ enum State {
     READY,
     MOTOR,
     OPEN,
-    CLOSE
+    CLOSE,
+    END
 };
 
 
@@ -91,7 +92,7 @@ float velocityFromPitot(float delta_p);
 #define   AY                                  0x21
 #define   AZ                                  0x22
 
-#define   ACC_THRESHOLD                       2000 //4175 //=20*208,77
+#define   ACC_THRESHOLD                       2000 //8350 //=20*417.5
 
 #define   PRESSURE_SENSOR_STATUS_NORMAL       0b00
 #define   PRESSURE_SENSOR_STATUS_COMMAND      0b01
