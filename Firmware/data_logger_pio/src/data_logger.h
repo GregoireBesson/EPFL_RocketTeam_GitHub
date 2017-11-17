@@ -83,7 +83,7 @@ float velocityFromPitot(float delta_p);
 
 // boolean
 #define   VERBOSE                             true
-#define   PITOT_TUBE                          true
+#define   PITOT_TUBE                          false
 #define   GY_91                               true
 
 #define   TS                                  0x40
