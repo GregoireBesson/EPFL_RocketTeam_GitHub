@@ -41,7 +41,7 @@ classdef kalman <handle
             x_hat = motion_model(obj, obj.mass(obj.i), obj.thrust(obj.i), dt);
             
             % Jacobian of the motion model
-            acc = (0.5*1.225*obj.x(2)^2*(0.0082*.3)+obj.thrust(obj.i))/(obj.mass_motor(obj.i) + obj.mass_rocket);
+            acc = (0.5*1.225*obj.x(2)^2*(0.0082*.3)+obj.thrust(obj.i))/(obj.mass(obj.i));
             F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc];
             obj.P = F*obj.P*F' + Q;
 
