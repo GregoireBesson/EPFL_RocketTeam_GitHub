@@ -7,15 +7,13 @@
 
 //select the chip (depend on the SD shield, put 10 for Adafruit)
 const float rho = 1.225;  // air density at 15°C [kg/m^3]
-const int chipSelect = 10;
-const int button = 3;
-const int led = 8;
-const int error_led = 7;
-const int brakes_pin = 4;
-const unsigned long period = 10 * 1000; // period in microseconds
+constexpr unsigned long period = 10 * 1000; // period in microseconds
 bool writeToSD = false;
 uint32_t sequenceNumber;
 
+static uint8_t xbeeCrc = 0xff;
+static uint16_t payloadCrc = 0x00;
+static uint8_t packetGroupIndex = 0;
 
 Adafruit_BMP280 bmp; // I2C
 File myFile;
@@ -25,7 +23,6 @@ String DELIMITER;
 
 // Initializations
 void setup() {
-
     DELIMITER = F(",\t");
 
     //Xbee serial: RX = digital pin 5, TX = digital pin 6
@@ -34,41 +31,43 @@ void setup() {
     sequenceNumber = 0;
 
     // Arduino initialization
+    if (!i2c_init()) {
+        serialLog(F("Error during the initialization of I2C"));
+    }
+
     Wire.begin();
     Serial.begin(115200);
 
+#if GY_91
     // Configure gyroscope range
     I2CwriteByte(MPU9250_ADDRESS, 27, GYRO_FULL_SCALE_2000_DPS);
     // Configure accelerometers range
     I2CwriteByte(MPU9250_ADDRESS, 28, ACC_FULL_SCALE_8_G);
     // Set by pass mode for the magnetometers
     I2CwriteByte(MPU9250_ADDRESS, 0x37, 0x02);
-
     // Request first magnetometer single measurement
     I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
     if (!bmp.begin()) {
-#if VERBOSE
-        Serial.println(F("Could not find a valid BMP280 sensor, check wiring! (or adress!!!)"));
-#endif
+        serialLog(F("Could not find a valid BMP280 sensor, check wiring! (or adress!!!)"));
         while (true) {
             bip(50);
         }
     }
-
-#if VERBOSE
-    Serial.print(F("\nInitializing SD card... "));
 #endif
-    pinMode(chipSelect, OUTPUT);
-    pinMode(led, OUTPUT);
-    pinMode(brakes_pin, OUTPUT);
-    pinMode(button, INPUT_PULLUP);
-    pinMode(BUZZER, OUTPUT);
 
-    if (!SD.begin(chipSelect)) {
-        digitalWrite(error_led, HIGH);
+    serialLog(F("\nInitializing SD card... "));
+
+    pinMode(CHIP_SELECT_PIN, OUTPUT);
+    //pinMode(SD_LED_PIN, OUTPUT);
+    pinMode(BRAKES_PIN, OUTPUT);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    pinMode(BUZZER_PIN, OUTPUT);
+
+    if (!SD.begin(CHIP_SELECT_PIN)) {
+        //digitalWrite(ERROR_LED_PIN, HIGH);
         delay(100);
-        digitalWrite(error_led, LOW);
+        //digitalWrite(ERROR_LED_PIN, LOW);
         delay(500);
     } else {
         // open the file. note that only one file can be opened at a time,
@@ -77,44 +76,36 @@ void setup() {
         myFile = SD.open(F("data/test.txt"), FILE_WRITE);
         if (myFile) {
             writeToSD = true;
-#if VERBOSE
-            Serial.println(F("initialization of SD card file succeeded!"));
-#endif
+            serialLog(F("initialization of SD card file succeeded!"));
         }
     }
 
     if (!writeToSD) {
-#if VERBOSE
-        Serial.println(F("Error during the initialization of SD Card."));
-#endif
-        digitalWrite(error_led, HIGH);
+        serialLog(F("Error during the initialization of SD Card."));
+        while(true);
+        //digitalWrite(ERROR_LED_PIN, HIGH);
     }
 
 
-#if VERBOSE
-    Serial.println(F("Press the button to start data logging"));
-#endif
-    /*
-    while (digitalRead(button));
+    serialLog(F("Press the button to start data logging"));
+
+    while (digitalRead(BUTTON_PIN));
     delay(10);
-    while (!digitalRead(button));
-*/
+    while (!digitalRead(BUTTON_PIN));
+
     // send visual and audio feedback when the logging starts
-    digitalWrite(led, HIGH);
+    //digitalWrite(SD_LED_PIN, HIGH);
     bip(800);
 
     // if the file opened okay, write to it:
     myFile.println(F("START"));
-    String temp = F("t[ms],\t\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\tpres[hPa]");
+    String temp = F("t[ms],\t\tax,\tay,\taz,\tgx,\tgy,\tgz,\tmx,\tmy,\tmz,\tpres[hPa],\tdelta_p");
     myFile.println(temp);
 #if VERBOSE
     Serial.println(F("START"));
     Serial.println(temp);
 #endif
     //telemSerial->println("Telemetry starts now");
-
-    //request for the first mag measurement
-    I2CwriteByte(MAG_ADDRESS, 0x0A, 0x01);
 
 #if VERBOSE
     Serial.println(F("Ready"));
@@ -135,7 +126,7 @@ void loop() {
     static uint8_t counter = 0;
 
     // Stop logging and switch off the LED when button is pushed
-    if (!digitalRead(button) & writeToSD) {
+    if (!digitalRead(BUTTON_PIN) & writeToSD) {
         myFile.println(F("STOP"));
         // close the file:
         myFile.close();
@@ -143,49 +134,68 @@ void loop() {
         Serial.println(F("File correctly saved."));
 #endif
         writeToSD = false;
-        digitalWrite(led, LOW);
+        //digitalWrite(SD_LED_PIN, LOW);
         bip(500);
         delay(500);
         bip(500);
     }
 
-    uint16_t remainder = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
-    // Beginning of telemetry transmission:
+    if (packetGroupIndex++ == 0) {
+        //Beginning of Xbee API frame:
+        telemSerial->write(XBEE_START);
+
+        //Length (on 16 bits) = 14 +  3 * Payload size = 146 = 0x92
+        telemSerial->write(static_cast<uint8_t>(0x00));
+        telemSerial->write(static_cast<uint8_t>(0x92));
+
+        for (uint8_t byte: XBEE_FRAME_OPTIONS) {
+            telemSerial->write(byte);
+        }
+        xbeeCrc = XBEE_FRAME_OPTIONS_CRC;
+    }
+
+    payloadCrc = SimpleCRC::CRC_16_GENERATOR_POLY.initialValue;
+
+    // Beginning of telemetry payload:
     for (size_t i = 0; i < PREAMBLE_SIZE; ++i) {
         telemSerial->write(HEADER_PREAMBLE_FLAG);
+        xbeeCrc += HEADER_PREAMBLE_FLAG;
     }
-    telem_write_uint32(sequenceNumber++, &remainder);
-    telem_write_uint8(static_cast<uint8_t>(DatagramPayloadType::TELEMETRY), &remainder);
+
+    telem_write_uint32(sequenceNumber++);
+    telem_write_uint8(static_cast<uint8_t>(DatagramPayloadType::TELEMETRY));
     telemSerial->write(CONTROL_FLAG);
+    xbeeCrc += CONTROL_FLAG;
 
     // Datagram PAYLOAD
-    telem_write_uint32(static_cast<uint32_t>(measurement_time), &remainder);
+    telem_write_uint32(static_cast<uint32_t>(measurement_time));
 
+    // array containing the data (acc, gyro, mag)
+    measurements data{};
+
+#if GY_91
     // ____________________________________
     // :::  accelerometer and gyroscope :::
 
     uint8_t bufIMU[14];
     I2Cread(MPU9250_ADDRESS, 0x3B, 14, bufIMU);
 
-    // array containing the data (acc, gyro, mag)
-
-    measurements data{};
 
     data.ax = bufIMU[0] << 8 | bufIMU[1];   // ax
     data.ay = bufIMU[2] << 8 | bufIMU[3];  // ay
     data.az = bufIMU[4] << 8 | bufIMU[5];  // az
 
-    telem_write_uint16(data.ax, &remainder);
-    telem_write_uint16(data.ay, &remainder);
-    telem_write_uint16(data.az, &remainder);
+    telem_write_uint16(data.ax);
+    telem_write_uint16(data.ay);
+    telem_write_uint16(data.az);
 
     data.gx = bufIMU[8] << 8 | bufIMU[9];  // gx
     data.gy = bufIMU[10] << 8 | bufIMU[11];// gy
     data.gz = bufIMU[12] << 8 | bufIMU[13];// gz
 
-    telem_write_uint16(data.gx, &remainder);
-    telem_write_uint16(data.gy, &remainder);
-    telem_write_uint16(data.gz, &remainder);
+    telem_write_uint16(data.gx);
+    telem_write_uint16(data.gy);
+    telem_write_uint16(data.gz);
 
     // _____________________
     // :::  Magnetometer :::
@@ -207,42 +217,49 @@ void loop() {
     data.my = bufMag[1] << 8 | bufMag[0]; // my
     data.mz = bufMag[5] << 8 | bufMag[4]; // mz
 
-
-    telem_write_uint16(data.mx, &remainder);
-    telem_write_uint16(data.my, &remainder);
-    telem_write_uint16(data.mz, &remainder);
+    telem_write_uint16(data.mx);
+    telem_write_uint16(data.my);
+    telem_write_uint16(data.mz);
 
     // pressure from BMP280
     auto pressureTemperature = bmp.readPressureTemperature();
     float_cast pressure = {.fl = pressureTemperature.pressure};
     float_cast temperature = {.fl = pressureTemperature.temperature};
 
-    // pressure from pitot tube
-    uint8_t bufPitot[2];
-    I2Cread_NoReg(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2, bufPitot);
-    uint16_t press = (((uint16_t)bufPitot[0]  << 8) | (uint16_t)bufPitot[1]) & 0x3fff;
+    telem_write_uint32(temperature.uint32);
+    telem_write_uint32(pressure.uint32);
+#endif
 
-    uint8_t status = bufPitot[0] >> 6;
+#if PITOT_TUBE
 
-    if (status != PRESSURE_SENSOR_STATUS_NORMAL && status != PRESSURE_SENSOR_STATUS_STALE_DATA) {
-        Serial.println("Error reading the pitot sensor");;
-    }
+    // _____________________
+    // :::  Pitot Tube :::
+
+    //uint8_t bufPitot[2];
+    //SoftI2Cread2Bytes(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, bufPitot);
+    //I2Cread_NoReg(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2, bufPitot);
+    //uint16_t press = (((uint16_t) bufPitot[0] << 8) | (uint16_t) bufPitot[1]) & 0x3fff;
+
+    Wire.requestFrom(DIFF_PRESS_HIGH_RANGE_SENSOR_ADDR, 2);
+    uint16_t delta_p = (((uint16_t) Wire.read() <<8) | (uint16_t) Wire.read()) & 0x3fff;
+    telem_write_uint16(delta_p);
 
     /* Pressure transfer function */
-    float p_press = ((float)press - 1638) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
-                / (14745 - 1638) + PRESSURE_SENSOR2_MIN;
-    float v_square = velocityFromPitot(p_press);
-    Serial.println(p_press);
-    Serial.println(v_square);
+    //float_cast p_press{.fl = ((float) press - 1652) * (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN)
+                            // / (14745 - 1652) + PRESSURE_SENSOR2_MIN};
+#else
+    telem_write_uint16(0);
+#endif
 
-    telem_write_uint32(temperature.uint32, &remainder);
-    telem_write_uint32(pressure.uint32, &remainder);
+    auto crc = SimpleCRC::Finalize(payloadCrc);
+    telem_write_uint8(crc >> 8);
+    telem_write_uint8(crc);
 
-
-
-    auto crc = SimpleCRC::Finalize(remainder);
-    telemSerial->write(crc >> 8);
-    telemSerial->write(crc);
+    if (packetGroupIndex == 3) {
+        xbeeCrc = static_cast<uint8_t >(0xff) - xbeeCrc;
+        telemSerial->write(xbeeCrc);
+        packetGroupIndex = 0;
+    }
 
 
     String dataStringSD = measurement_time + DELIMITER
@@ -255,8 +272,12 @@ void loop() {
                           + data.mx + DELIMITER
                           + data.my + DELIMITER
                           + data.mz + DELIMITER
-                          + pressure.fl;
-
+                          + pressure.fl + DELIMITER
+#if PITOT_TUBE
+    + delta_p;
+#else
+    ;
+#endif
     if (writeToSD) {
         myFile.println(dataStringSD);
     }
@@ -314,7 +335,7 @@ void loop() {
             break;
 
         case OPEN:
-            digitalWrite(brakes_pin, HIGH);
+            digitalWrite(BRAKES_PIN, HIGH);
 
             if (millis() - lastState > 800 && counter < 3) {
                 counter++;
@@ -325,9 +346,19 @@ void loop() {
 #endif
                 lastState = millis();
             }
+            else if(millis()-lastState > 1000){
+                myFile.println(F("Safety"));
+                myFile.close();
+                //digitalWrite(BRAKES_PIN, LOW);
+                myFile = SD.open(F("data/test.txt"), FILE_WRITE);
+    #if VERBOSE
+                Serial.println(F("File_Close/Open"));
+    #endif
+                state = END;
+            }
             break;
         case CLOSE:
-            digitalWrite(brakes_pin, LOW);
+            digitalWrite(BRAKES_PIN, LOW);
 
             if (millis() - lastState > 800) {
                 state = OPEN;
@@ -338,9 +369,7 @@ void loop() {
                 lastState = millis();
             }
             break;
-#if VERBOSE
-            Serial.println("PHASE2");
-#endif
+        case END:
             break;
     }
 }
@@ -358,6 +387,14 @@ void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t *Data) {
     uint8_t index = 0;
     while (Wire.available())
         Data[index++] = Wire.read();
+}
+
+void SoftI2Cread2Bytes(uint8_t Address, uint8_t *Data) {
+    // Read 2bytes
+    i2c_start_wait(Address | I2C_READ);
+    Data[0] = i2c_read(false);
+    Data[1] = i2c_read(true);
+    i2c_stop();
 }
 
 void I2Cread_NoReg(uint8_t Address, uint8_t Nbytes, uint8_t *Data) {
@@ -378,47 +415,73 @@ void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data) {
     Wire.endTransmission();
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconversion"
+void sendTelemetryByte(uint8_t byte) {
+    uint8_t toSend = 0;
+    if ((toSend = escapedCharacter(byte)) != 0) {
+        //We need to escape the character:
+        telemSerial->write(XBEE_ESCAPE);
+        telemSerial->write(toSend);
+    } else {
+        telemSerial->write(byte);
+    }
+    xbeeCrc += byte;
+    payloadCrc = SimpleCRC::CalculateRemainderFromTable(byte, payloadCrc);
 
-void telem_write_uint32(uint32_t val, uint16_t *remainder) {
+}
+
+uint8_t escapedCharacter(uint8_t byte) {
+    switch (byte) {
+        case 0x7e:
+            return 0x53;
+        case 0x7d:
+            return 0x5d;
+        case 0x11:
+            return 0x31;
+        case 0x13:
+            return 0x33;
+        default:
+            return 0x00;
+    }
+}
+
+void telem_write_uint32(uint32_t val) {
     for (int8_t i = sizeof(uint32_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
-        telemSerial->write(byte);
+        sendTelemetryByte(byte);
     }
 }
 
-void telem_write_uint16(uint16_t val, uint16_t *remainder) {
+void telem_write_uint16(uint16_t val) {
     for (int8_t i = sizeof(uint16_t) - 1; i >= 0; --i) {
         uint8_t byte = val >> 8 * i;
-        *remainder = SimpleCRC::CalculateRemainderFromTable(byte, *remainder);
-        telemSerial->write(byte);
+        sendTelemetryByte(byte);
     }
 }
 
-void telem_write_uint8(uint8_t val, uint16_t *remainder) {
-    *remainder = SimpleCRC::CalculateRemainderFromTable(val, *remainder);
-    telemSerial->write(val);
+void telem_write_uint8(uint8_t val) {
+    sendTelemetryByte(val);
 }
-
-#pragma clang diagnostic pop
 
 // send a bip when the logging starts
 void bip(int duration) {
     int period = 100;
     int count = duration * 5;
     for (int i = 0; i < count; i++) {
-        digitalWrite(BUZZER, HIGH);
+        digitalWrite(BUZZER_PIN, HIGH);
         delayMicroseconds(period);
-        digitalWrite(BUZZER, LOW);
+        digitalWrite(BUZZER_PIN, LOW);
         delayMicroseconds(period);
     }
 }
 
 // compute the squared velocity from the pressure difference
 float velocityFromPitot(float delta_p) {
-  float v_square;
-  v_square = 2*delta_p/rho;
-  return v_square;
+    float v_square = 2 * delta_p / rho;
+    return v_square;
+}
+
+void serialLog(const String &str) {
+#if VERBOSE
+    Serial.println(str);
+#endif
 }
