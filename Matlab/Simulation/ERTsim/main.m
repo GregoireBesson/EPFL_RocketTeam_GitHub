@@ -72,4 +72,4 @@ grid on
 % hold on
 
 %% Plot flight and stability data
-%plotData(log, roro);
+plotData(log, roro);
