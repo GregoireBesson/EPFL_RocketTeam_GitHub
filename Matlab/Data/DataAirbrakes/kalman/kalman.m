@@ -4,7 +4,6 @@ classdef kalman <handle
         i
         P
         H
-        % B pas de commande
         R
         Q
         x
@@ -29,20 +28,20 @@ classdef kalman <handle
             
             % TODO transmetre env.rho, roro.Aref et roro.Cd
             rho = 1.225;
-            A_ref = 0.0082;
+            Aref = 0.0082;
             Cd = .3;
-            
+            dm = (obj.mass(obj.i+1)-obj.mass(obj.i))/dt;
             % TODO ajouter aire brakes et CD brakes
-            
-            
-            
    
             % motion model that predicts the current state frome previous
-            x_hat = motion_model(obj, obj.mass(obj.i), obj.thrust(obj.i), dt);
+            % // ajouter CD quand on aura fait une identification
+            x_hat = motion_model(obj, dt);
             
             % Jacobian of the motion model
-            acc = (0.5*1.225*obj.x(2)^2*(0.0082*.3)+obj.thrust(obj.i))/(obj.mass(obj.i));
-            F = [1 dt acc*dt^2; 0 1 acc*dt; 0 0 acc];
+            % df x dot dot over d x dot
+            dfxdd_dxd = (Cd * rho * Aref * obj.x(2)^2* + dm/dt)/(obj.mass(obj.i));
+            F = [1 dt-dfxdd_dxd*dt^2 dt^2; 0 dfxdd_dxd dt; 0 dfxdd_dxd 1];
+            
             obj.P = F*obj.P*F' + Q;
 
             y = z - obj.H * x_hat;   %x_hat(2)

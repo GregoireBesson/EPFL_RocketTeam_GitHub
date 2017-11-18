@@ -30,6 +30,7 @@ init.thrust = thrust; % value of the thrust in function of the time
 init.mass_motor = mass; % values of the mass in function of the time
 init.mass_rocket = 2; % mass of the rocket
 
+
 kalman = kalman(init)
 
 z = [altitude'; speed'; acceleration'];
@@ -63,7 +64,7 @@ title('acceleration');
 grid on
 
 drawnow
-for i = 1:length(z)
+for i = 1:length(z)-1
     
     % to be defined
     R = [1000-i 0 0; 0 1000 0; 0 0 10];
