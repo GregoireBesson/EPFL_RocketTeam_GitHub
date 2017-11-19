@@ -8,7 +8,12 @@ classdef kalman <handle
         Q
         x
         mass
-        thrust
+    thrust
+                % TODO transmetre env.rho, roro.Aref et roro.Cd
+        rho = 1.225;
+        A_ref = 0.0082;
+        Cd = .3;
+
     end
     methods
         function obj = kalman(init)
@@ -26,10 +31,6 @@ classdef kalman <handle
             obj.i = obj.i+1;
             dt = .01;
             
-            % TODO transmetre env.rho, roro.Aref et roro.Cd
-            rho = 1.225;
-            Aref = 0.0082;
-            Cd = .3;
             dm = (obj.mass(obj.i+1)-obj.mass(obj.i))/dt;
             % TODO ajouter aire brakes et CD brakes
    
