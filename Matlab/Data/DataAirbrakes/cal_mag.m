@@ -3,7 +3,6 @@ function [ mx, my, mz ] = cal_mag( mx, my, mz )
 % biased input
 % spherefit
 % unbiased output
-figure(1)
 scatter3(mx, my, mz,'.','DisplayName','Raw Data');
 hold on
 axis equal
