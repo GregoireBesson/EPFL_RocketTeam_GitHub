@@ -6,10 +6,10 @@ function plotRocketState(roro)
     Y = 2;
     D = roro.D;
     R = D/2;
-    brakeLength = 30e-2;
+    brakeLength = 20e-2;
     brakeWidth = 2e-2;
     brakeAngle = 1*2*pi/360;
-    brakePos = 0.70;
+    brakePos = 0.50;
     
     brakeRight = [R-brakeWidth R R R-brakeWidth; brakePos brakePos ...
                   brakePos-brakeLength brakePos-brakeLength] ;
@@ -35,7 +35,7 @@ function plotRocketState(roro)
     VL = RL*(VL - CL) + CL;
     set(hBrakeRight,'Vertices',VR');          % % update the vertices
     set(hBrakeLeft,'Vertices',VL');
-    pause(0.01)
+    pause(0.03)
     
     end
     
@@ -51,7 +51,7 @@ function plotRocketState(roro)
     VL = RL*(VL - CL) + CL;
     set(hBrakeRight,'Vertices',VR');          % % update the vertices
     set(hBrakeLeft,'Vertices',VL');
-    pause(0.01)
+    pause(0.03)
     
     end
 end

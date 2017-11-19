@@ -87,13 +87,15 @@ axG = axMS2/9.81;
 ayG = ayMS2/9.81;
 azG = azMS2/9.81;
 
-% speed from integrating the acceleration
+% speed and altitude from integrating the acceleration
 cut = timeMillis>t0&timeMillis<tPara;
 ayMS2Cut = ayMS2(cut);
 altCut = alt(cut);
 timeMillisCut = timeMillis(cut);
 velocityFromAcc = cumsum((ayMS2Cut(1:end-1)-9.81).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 velocityFromAcc = [velocityFromAcc;0];
+altFromAcc = cumsum((velocityFromAcc(1:end-1)).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
+altFromAcc = [altFromAcc;0];
 
 %gyroscope calibraiton
 %[gx, gy, gz] = cal_gyr(gx, gy, gz);
@@ -390,12 +392,43 @@ plot(timeMillisCut,velocityPitot(cut),'Linewidth',1.5,'DisplayName','From Pitot'
 xlim([minMillis tApogee]);
 set(gca,'fontsize', 16);
 grid on
+legend show
 ylabel('Veloctiy [m/s]')
 xlabel('Time [ms]');
+
+%% Alt from double integration of acc VS alt from barometer
+
+figure(9)
+title('Altitude from accelerometer VS alt. from barometer');
+plot(timeMillisCut,altFromAcc,'--','Linewidth',2.5,'DisplayName','From Acc');
+hold on
+plot(timeMillisCut,alt(cut),'Linewidth',1.5,'DisplayName','From Baro');
+xlim([t0 tApogee]);
+set(gca,'fontsize', 16);
+grid on
+legend show
+ylabel('Altitude [m]')
+xlabel('Time [ms]');
+
 
 %% Speed vs Drag Acceleration
 %cut2 = timeMillis>tBurnout&timeMillis<(tApogee);
 %velocityFromAcc = velocityFromAcc(cut2);
-figure(9)
+figure(10)
 scatter(velocityFromAcc,ayMS2Cut)
 title('Drag Acceleration vs speed')
+
+%% Superpose Acc / Speed / Alt
+
+figure(11)
+hold on
+grid on
+%plot(timeMillis, alt,'Linewidth',1.5)
+plot(timeMillisCut, ayMS2Cut,'Linewidth',1.5)
+plot(timeMillisCut, velocityFromAcc,'Linewidth',1.5)
+plot(timeMillisCut, altFromAcc,'Linewidth',1.5)
+%plot(timeMillis, speedbaro,'Linewidth',1.5)
+legend('Acc [m/s^2]', 'Velocity [m/s]', 'Altitude [m]')
+xlabel('Time [ms]');
+xlim([t0 tApogee]);
+set(gca,'fontsize', 16);

@@ -25,13 +25,13 @@ mass(1) = mass(2); % je sais pas pourquoi il y a 1.5 au début de la mass
 init = struct;
 init.P = [.5 0 0; 0 .5 0; 0 0 .5];
 init.H = eye(3);
-init.x = [0; 0; 0]
+init.x = [0; 0; 0];
 init.thrust = thrust; % value of the thrust in function of the time
 init.mass_motor = mass; % values of the mass in function of the time
 init.mass_rocket = 2; % mass of the rocket
 
 
-kalman = kalman(init)
+kalman = kalman(init);
 
 z = [altitude'; speed'; acceleration'];
 
