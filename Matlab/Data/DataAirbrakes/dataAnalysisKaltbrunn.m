@@ -32,26 +32,31 @@ mz = M(:,10);
 press = M(:,11)/100;    % pressure is read in Pa, converted to hPa
 deltaP = M(:,12);
 
+load('log.mat');
+
+timeSim = log(:,12)*1000;
+accSim = log(:,13);
+
 %% Processing
 
-% time offset (motor starts burning at t=0ms)
-tOffset = 5.55e8-93.17;
+% time offset (motor starts burning at t=0ms) in ms
+tOffset = 554906.830;
 t0 = 0;
 
-% events
-tm = 554972368 - tOffset;
-topen1 = 557485792 - tOffset;
-tclose1 = 558291264 - tOffset;
-topen2 = 559097208 - tOffset;
-tclose2 = 559907908 - tOffset;
-topen3 = 560721528 - tOffset;
-tclose3 = 561529152 - tOffset;
-topen4 = 562343100 - tOffset;
-tBurnout = 0;
-tApogee = 7541.7;
-tPara = 1.033e4;
+% events in ms
+tm = 554972.368 - tOffset;
+topen1 = 557485.792 - tOffset;
+tclose1 = 558291.264 - tOffset;
+topen2 = 559097.208 - tOffset;
+tclose2 = 559907.908 - tOffset;
+topen3 = 560721.528 - tOffset;
+tclose3 = 561529.152 - tOffset;
+topen4 = 562343.100 - tOffset;
+tBurnout = 2090;
+tApogee = 7634.7;
+tPara = 10e3;
 
-timeMicros = timeMicros - tOffset;
+timeMicros = timeMicros - tOffset*1000;
 timeMillis = timeMicros/1000;
 timeSec = timeMillis/1000;
 timeMin = timeSec/60;
@@ -59,6 +64,18 @@ minMillis = -1000;
 maxMillis = 40000;
 minSec = minMillis/1000;
 maxSec = maxMillis/1000;
+
+%removal of aberrant values on the first run
+if (firstRun)
+    press(10697)= press(10696);
+    press(10698)= press(10696);
+    press(10699)= press(10696);
+end
+
+% compute the altitude from the barometer
+seaLevelhPA = 1013.25;
+alt = 44330*(1-((press)/seaLevelhPA).^(0.1903));
+alt = alt - alt(1);
 
 % acceleration from LSBm/s^2 to m/s^2
 accFactorUnits = 1/417.5;
@@ -70,30 +87,28 @@ axG = axMS2/9.81;
 ayG = ayMS2/9.81;
 azG = azMS2/9.81;
 
+% speed from integrating the acceleration
+cut = timeMillis>t0&timeMillis<tPara;
+ayMS2Cut = ayMS2(cut);
+altCut = alt(cut);
+timeMillisCut = timeMillis(cut);
+velocityFromAcc = cumsum((ayMS2Cut(1:end-1)-9.81).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
+velocityFromAcc = [velocityFromAcc;0];
+
 %gyroscope calibraiton
 %[gx, gy, gz] = cal_gyr(gx, gy, gz);
-%removal of aberrant values on the first run
-% if (firstRun)
-%     k = find(press>950);
-%     press(k) = press(k(1)-1);
-%     firstRun = false;
-% end
-
-% compute the altitude from the barometer
-seaLevelhPA = 1013.25;
-alt = 44330*(1-((press)/seaLevelhPA).^(0.1903));
-alt = alt - alt(1);
 
 % compute the speed from the pitot sensor
 deltaPoffset = deltaP(10);
-deltaP = deltaP - deltaPoffset;
-% PRESSURE_SENSOR2_MAX = 103421/6;
-% PRESSURE_SENSOR2_MIN = 0;
-% deltaP_ranged = (deltaP - deltaPoffset)*...
-%                 (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN) / ...
-%                 (max(deltaP) - deltaPoffset) + PRESSURE_SENSOR2_MIN;
+deltaPmax = max(deltaP);
+%deltaP = deltaP - deltaPoffset;
+PRESSURE_SENSOR2_MAX = 103421;
+PRESSURE_SENSOR2_MIN = 0;
+deltaP = (deltaP - deltaPoffset)*...
+                (PRESSURE_SENSOR2_MAX - PRESSURE_SENSOR2_MIN) / ...
+                (deltaPmax - deltaPoffset) + PRESSURE_SENSOR2_MIN;
 RHO_AIR = 1.225;
-velocityPitot = sqrt(abs(2 * deltaP / RHO_AIR)); 
+velocityPitot = (3/20)*sqrt(abs(2 * deltaP / RHO_AIR)); %%%%%%%%%%%%%%%%%%%%%% Why 3/20 ??
 
 %% Plots of pressure and altitude
 
@@ -343,28 +358,44 @@ end
 set(gca,'fontsize', 16);
 grid on
 
-%% Accelration versus Airbrakes signal
+%% Acceleration versus Airbrakes signal
 
 AirbrakesSignal = ones(size(ay));
 AirbrakesSignal = - AirbrakesSignal;
-BrakeIndexes = find(timeMicros>=topen1 & timeMicros<tclose1 | ... 
-                    timeMicros>=topen2 & timeMicros<tclose2 | ... 
-                    timeMicros>=topen3 & timeMicros<tclose3 | ... 
-                    timeMicros>=topen4 );
+BrakeIndexes = find(timeMillis>=topen1 & timeMillis<tclose1 | ... 
+                    timeMillis>=topen2 & timeMillis<tclose2 | ... 
+                    timeMillis>=topen3 & timeMillis<tclose3 | ... 
+                    timeMillis>=topen4 );
 AirbrakesSignal(BrakeIndexes) = 1;
 
 figure(7)
-%yyaxis left
 plot(timeMillis,ayG,'Linewidth',1.5,'DisplayName','Acceleration')
 ylabel('Magnitude [g, -]')
 xlabel('Time [ms]');
-xlim([minMillis tApogee+1500]);
-%ylim([-50 100]);
+xlim([minMillis tPara]);
 set(gca,'fontsize', 16);
 grid on
 hold on
-%yyaxis right
+
 plot(timeMillis, AirbrakesSignal, 'Linewidth',1.5,'DisplayName','Airbrakes Signal')
 legend show
-%ylabel('Airbrakes Signal')
-%ylim([-1 10]);
+
+%% Speed from integration of acc VS speed from pitot sensor
+
+figure(8)
+title('Axial Velocity from integration VS Velocity from Pitot Tube');
+plot(timeMillisCut,velocityFromAcc,'Linewidth',1.5,'DisplayName','From Acc');
+hold on
+plot(timeMillisCut,velocityPitot(cut),'Linewidth',1.5,'DisplayName','From Pitot');
+xlim([minMillis tApogee]);
+set(gca,'fontsize', 16);
+grid on
+ylabel('Veloctiy [m/s]')
+xlabel('Time [ms]');
+
+%% Speed vs Drag Acceleration
+%cut2 = timeMillis>tBurnout&timeMillis<(tApogee);
+%velocityFromAcc = velocityFromAcc(cut2);
+figure(9)
+scatter(velocityFromAcc,ayMS2Cut)
+title('Drag Acceleration vs speed')
