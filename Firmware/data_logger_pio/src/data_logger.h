@@ -92,7 +92,7 @@ float velocityFromPitot(float delta_p);
 #define   AY                                  0x21
 #define   AZ                                  0x22
 
-#define   ACC_THRESHOLD                       2000 //8350 //=20*417.5
+#define   ACC_THRESHOLD                       8350 //=20*417.5 /2000
 
 #define   PRESSURE_SENSOR_STATUS_NORMAL       0b00
 #define   PRESSURE_SENSOR_STATUS_COMMAND      0b01
