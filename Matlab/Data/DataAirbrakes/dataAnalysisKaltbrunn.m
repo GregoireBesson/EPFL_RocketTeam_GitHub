@@ -450,13 +450,13 @@ plot(x,fOpenNeuch,'Linewidth',2);
 title('Drag Acceleration vs speed')
 ylabel('Acceleration [m/s^2]')
 xlabel('Speed [m/s]');
-legend('closed brakes', 'open brakes', 'least squares open', 'least squares closed', 'least squares small brakes open')
+legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed', 'least squares small brakes open')
 grid on
 set(gca,'fontsize', 16);
 
 % mettre le calcul complet, je sais pas si on change Aref
-CdOpen = pOpen(3)
-CdClose = pClose(3)
+CdOpen = pOpen(3);
+CdClose = pClose(3);
 
 %% Superpose Acc / Speed / Alt
 
