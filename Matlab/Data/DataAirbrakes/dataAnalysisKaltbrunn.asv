@@ -456,7 +456,7 @@ set(gca,'fontsize', 16);
 
 % mettre le calcul complet, je sais pas si on change Aref
 CdOpen = pOpen(3)
-CdClose = pClose(3)
+CdClose = pClose()
 
 %% Superpose Acc / Speed / Alt
 
