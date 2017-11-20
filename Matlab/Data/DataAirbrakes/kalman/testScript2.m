@@ -48,35 +48,38 @@ subplot(2,1,2)
 plot(t, mass);
 title('expected mass')
 
+x_hat = zeros(3,length(t)-1);
 x = zeros(3,length(t));
 
 figure(2)
 subplot(3,1,1)
 plot_pos = plot(t, z(1,:));
 xlim([0 t(end)]);
-title('speed');
+title('Altitude [m]');
 grid on
 subplot(3,1,2)
 plot_speed = plot(t, z(2,:));
 xlim([0 t(end)]);
-title('speed');
+title('Speed [m/s]');
 grid on
 subplot(3,1,3)
 plot_acc = plot(t, z(3,:));
 xlim([0 t(end)]);
-title('acceleration');
+title('Acceleration [m/s^2]');
+xlabel('Time [s]')
 grid on
 
 %% Update Kalman
 
 drawnow
+
+t = t(1:end-1);
+
 for i = 1:length(z)-1
     
     % to be defined
-    %R = [1000-i 0 0; 0 1000 0; 0 0 10];
-    %Q = [1 0 0; 0 1 0; 0 0 1];
-    R = [1000 0 0; 0 5 0; 0 0 5];   % baro hyper noisy
-    Q = [1 0 0; 0 1 0; 0 0 50];     % prédicrion du thrust mauvaise
+    R = [10 0 0; 0 5 0; 0 0 5];   % baro hyper noisy
+    Q = [1 0 0; 0 1 0; 0 0 5];     % prédicrion du thrust mauvaise
     [x_hat(:,i), x(:,i)] = update(kalman, z(:,i), R, Q);
     
 %     subplot(3,1,1)
@@ -104,31 +107,34 @@ for i = 1:length(z)-1
 end
 
 % Final plots
-t = t(1:1:end-1);
 
 subplot(3,1,1)
-plot_pos = plot(t, x_hat(1,:)', t, z(1,1:end-1)', t, x(1,1:end-1)');
+plot_pos = plot(t, x_hat(1,:)','--', t, z(1,1:end-1)', t, x(1,1:end-1)');
 xlim([0 t(end)]);
 %ylim([-20 260]);
-title('altitude');
-legend('Prediction','Measurment','Correction')
+title('Altitude [m]');
+legend('Prediction','Measurment','Estimator')
 grid on
+set(gca,'fontsize', 16);
 
 subplot(3,1,2)
-plot_speed = plot(t, x_hat(2,:)',t, z(2,1:end-1)', t, x(2,1:end-1)');
-legend('Prediction','Measurment','Correction')
+plot_speed = plot(t, x_hat(2,:)','--',t, z(2,1:end-1)', t, x(2,1:end-1)');
+legend('Prediction','Measurment','Estimator')
 xlim([0 t(end)]);
-%ylim([-20 260]);
-title('speed');
+ylim([-20 75]);
+title('Speed [m/s]');
 grid on
+set(gca,'fontsize', 16);
 
 subplot(3,1,3)
-plot_acc = plot(t, x_hat(3,:)',t, z(3,1:end-1)', t, x(3,1:end-1)');
-legend('Prediction','Measurment','Correction')
+plot_acc = plot(t, x_hat(3,:)','--',t, z(3,1:end-1)', t, x(3,1:end-1)');
+legend('Prediction','Measurment','Estimator')
 xlim([0 t(end)]);
-%ylim([-20 260]);
-title('acceleration');
+ylim([-20 75]);
+title('Acceleration [m/s^2]');
+xlabel('Time [s]')
 grid on
+set(gca,'fontsize', 16);
 
 drawnow
 

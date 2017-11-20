@@ -31,7 +31,7 @@ init.x_hat = [0; 0; 0];
 init.x = [0; 0; 0];
 init.thrust = thrust; % value of the thrust in function of the time
 init.mass_motor = mass; % values of the mass in function of the time
-init.mass_rocket = 2; % mass of the rocket
+init.mass_rocket = 2.2; % mass of the rocket
 
 
 kalman = kalman(init);
@@ -48,6 +48,7 @@ subplot(2,1,2)
 plot(t, mass);
 title('expected mass')
 
+x_hat = zeros(3,length(t)-1);
 x = zeros(3,length(t));
 
 figure(2)
@@ -73,60 +74,63 @@ drawnow
 for i = 1:length(z)-1
     
     % to be defined
-    %R = [1000-i 0 0; 0 1000 0; 0 0 10];
-    %Q = [1 0 0; 0 1 0; 0 0 1];
-    R = [10 0 0; 0 10 0; 0 0 10];
-    Q = [0.1 0 00; 0 0.1 0; 0 0 0.1];
-
+    R = [10 0 0; 0 5 0; 0 0 5];   % baro hyper noisy
+    Q = [1 0 0; 0 1 0; 0 0 5];     % prédicrion du thrust mauvaise
     [x_hat(:,i), x(:,i)] = update(kalman, z(:,i), R, Q);
     
-%     subplot(3,1,1)
-%     plot_pos = plot(t(1:i), z(1,1:i)', t(1:i), x(1,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('altitude');
-%     grid on
-% 
-%     subplot(3,1,2)
-%     plot_speed = plot(t(1:i), z(2,1:i)', t(1:i), x(2,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('speed');
-%     grid on
-% 
-%     subplot(3,1,3)
-%     plot_acc = plot(t(1:i), z(3,1:i)', t(1:i), x(3,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('acceleration');
-%     grid on
-% 
-%     drawnow
+    t = t(1:1:end-1);
+
+    subplot(3,1,1)
+    plot_pos = plot(t(i), x_hat(1,i)','--', t, z(1,i)', t, x(1,1:end-1)');
+    xlim([0 t(end)]);
+    %ylim([-20 260]);
+    title('altitude');
+    legend('Prediction','Measurment','Estimator')
+    grid on
+
+    subplot(3,1,2)
+    plot_speed = plot(t, x_hat(2,:)','--',t, z(2,1:end-1)', t, x(2,1:end-1)');
+    legend('Prediction','Measurment','Estimator')
+    xlim([0 t(end)]);
+    ylim([-20 75]);
+    title('speed');
+    grid on
+
+    subplot(3,1,3)
+    plot_acc = plot(t, x_hat(3,:)','--',t, z(3,1:end-1)', t, x(3,1:end-1)');
+    legend('Prediction','Measurment','Estimator')
+    xlim([0 t(end)]);
+    ylim([-20 75]);
+    title('acceleration');
+    grid on
+
+    drawnow
 end
 
 % Final plots
+t = t(1:1:end-1);
 
 subplot(3,1,1)
-plot_pos = plot(t, x_hat(1,:)', t, z(1,:)', t, x(1,:)');
+plot_pos = plot(t, x_hat(1,:)','--', t, z(1,1:end-1)', t, x(1,1:end-1)');
 xlim([0 t(end)]);
 %ylim([-20 260]);
 title('altitude');
-legend('Prediction','Measurment','Correction')
+legend('Prediction','Measurment','Estimator')
 grid on
 
 subplot(3,1,2)
-plot_speed = plot(t, x_hat(1,:)'t, z(2,:)', t, x(2,:)');
-legend('Prediction','Measurment','Correction')
+plot_speed = plot(t, x_hat(2,:)','--',t, z(2,1:end-1)', t, x(2,1:end-1)');
+legend('Prediction','Measurment','Estimator')
 xlim([0 t(end)]);
-%ylim([-20 260]);
+ylim([-20 75]);
 title('speed');
 grid on
 
 subplot(3,1,3)
-plot_acc = plot(t, z(3,:)', t, x(3,:)');
-legend('Measurment','Estimator')
+plot_acc = plot(t, x_hat(3,:)','--',t, z(3,1:end-1)', t, x(3,1:end-1)');
+legend('Prediction','Measurment','Estimator')
 xlim([0 t(end)]);
-%ylim([-20 260]);
+ylim([-20 75]);
 title('acceleration');
 grid on
 
