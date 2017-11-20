@@ -450,10 +450,9 @@ plot(x,fOpen,'Linewidth',2);
 pClose = polyfit(velocityFromAcc(cutClose), ayMS2Cut(cutClose), 2);
 fClose = polyval(pClose,x);
 plot(x,fClose,'Linewidth',2);
-%pOpenNeuch = [-0.00184698786755789 0.00224022570886998 ...
-%-0.491510493405732];
-%fOpenNeuch = polyval(pOpenNeuch,x);
-%plot(x,fOpenNeuch,'Linewidth',2);
+pOpenNeuch = [-0.00184698786755789 0.00224022570886998 -0.491510493405732];
+fOpenNeuch = polyval(pOpenNeuch,x);
+plot(x,fOpenNeuch,'Linewidth',2);
 title('Drag Acceleration vs speed')
 ylabel('Acceleration [m/s^2]')
 xlabel('Speed [m/s]');
@@ -464,8 +463,11 @@ grid on
 set(gca,'fontsize', 16);
 
 % mettre le calcul complet, je sais pas si on change Aref
-CdOpen = pOpen(3);
-CdClose = pClose(3);
+    rho = 1.225;
+    Aref = 0.0082;
+
+CdOpen = -pOpen(1)/(.5*rho*Aref)
+CdClose = -pClose(1)/(.5*rho*Aref)
 
 %% Superpose Acc / Speed / Alt
 

@@ -75,8 +75,8 @@ for i = 1:length(z)-1
     % to be defined
     %R = [1000-i 0 0; 0 1000 0; 0 0 10];
     %Q = [1 0 0; 0 1 0; 0 0 1];
-    R = [1000 0 0; 0 5 0; 0 0 5];   % baro hyper noisy
-    Q = [1 0 0; 0 1 0; 0 0 50];     % prédicrion du thrust mauvaise
+    R = [5 0 0; 0 5 0; 0 0 5];
+    Q = [1 0 0; 0 1 0; 0 0 1];
     [x_hat(:,i), x(:,i)] = update(kalman, z(:,i), R, Q);
     
 %     subplot(3,1,1)
@@ -129,6 +129,18 @@ xlim([0 t(end)]);
 %ylim([-20 260]);
 title('acceleration');
 grid on
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    rho = 1.225;
+    Aref = 0.0082;
+    Cd = .3;
+    dm_dt = [dm_dt;0];
+
+    acc = (thrust' - Cd * .5 * rho * Aref * x(2,:).^2 - dm_dt'.* x(2,:))./(mass'+2.2);
+    figure
+    grid on
+    plot(acc)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 drawnow
 
