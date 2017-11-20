@@ -417,6 +417,10 @@ xlabel('Time [ms]');
 figure(10)
 scatter(velocityFromAcc,ayMS2Cut)
 title('Drag Acceleration vs speed')
+ylabel('Acceleration [m/s^2]')
+xlabel('Speed [m/s]');
+grid on
+set(gca,'fontsize', 16);
 
 %% Superpose Acc / Speed / Alt
 
