@@ -35,12 +35,12 @@ Mass(1) = Mass(2); % parce qu'il y a un NaN au début
 init = struct;
 init.P = [.5 0 0; 0 .5 0; 0 0 .5];
 init.H = eye(3);
-init.x = [0; 0; 0]
+init.x = [0; 0; 0];
 init.thrust = Thrust; % value of the thrust in function of the time
 init.mass_motor = Mass; % values of the mass in function of the time
 init.mass_rocket = 2; % mass of the rocket
 
-kalman = kalman(init)
+kalman = kalman(init);
 
 z = [altitude'; speed'; acceleration'];
 z(:,1) = z(:,2); % because first values are NaN
