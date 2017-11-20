@@ -31,7 +31,7 @@ classdef kalman <handle
             % TODO transmetre env.rho, roro.Aref et roro.Cd
             rho = 1.225;
             Aref = 0.0082;
-            Cd = .3;
+            Cd = .4;
             dm = (obj.mass(obj.i+1)-obj.mass(obj.i))/dt;
             % TODO ajouter aire brakes et CD brakes
    
@@ -49,7 +49,7 @@ classdef kalman <handle
             y = z - obj.H * x_hat;  
             S = obj.H*obj.P*obj.H' + R;
             K = obj.P * (obj.H')/(S);
-            obj.x = obj.x + K*y;
+            obj.x = x_hat + K*y;
             obj.P = (eye(3)-K*obj.H)*obj.P;
             x = obj.x;
 
