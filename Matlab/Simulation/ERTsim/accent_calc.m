@@ -96,7 +96,7 @@ function  [t, state] = accent_calc( roro,tend )
 
         end
        if(roro.brake_t > 1.7)
-           roro.Cdbrake = 0.3202;
+           roro.Cdbrake = 0.0;
        end
 %         
 %        if(roro.time > 1.3)

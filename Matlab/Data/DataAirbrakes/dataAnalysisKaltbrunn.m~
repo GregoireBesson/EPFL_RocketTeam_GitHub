@@ -421,9 +421,6 @@ xlabel('Time [ms]');
 %% Speed vs Drag Acceleration
 load('logSimNoBrakes.mat')
 
-SimAccNoBrakes = log(450:end,13);
-SimSpeedNoBrakes = log(450:end,6);
-
 figure(10)
 close
 
@@ -458,8 +455,8 @@ title('Drag Acceleration vs speed')
 ylabel('Acceleration [m/s^2]')
 xlabel('Speed [m/s]');
 hold on
-plot(SimSpeedNoBrakes,SimAccNoBrakes)
-legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed', 'Sim')
+plot(speed(50:400),acceleration(50:400))
+legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed', 'least squares small brakes open')
 grid on
 set(gca,'fontsize', 16);
 

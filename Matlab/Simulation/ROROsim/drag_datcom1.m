@@ -136,7 +136,7 @@ Kfb=0.1935*Rs^2+0.8174*Rs+1;
 
 Cd_f_alpha = (1.2*A_fp*4/(pi*d_f^2) +3.12*(Kfb +Kbf-1)*A_fe*4/(pi*d_f^2))*alpha^2;
 
-Cd = Cd0 + Cd_b_alpha + Cd_f_alpha x
+Cd = Cd0 + Cd_b_alpha + Cd_f_alpha ;
 
 
 Cdsurf(i,j) = Cd/sqrt(1-M^2)
