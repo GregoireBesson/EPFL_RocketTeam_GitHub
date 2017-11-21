@@ -83,8 +83,8 @@ for i = 1:length(z)-1
     % to be defined
     %R = [1000-i 0 0; 0 1000 0; 0 0 10];
     %Q = [1 0 0; 0 1 0; 0 0 1];
-    R = [1000 0 0; 0 10 0; 0 0 5];   % baro hyper noisy
-    Q = [1 0 0; 0 1 0; 0 0 50];     % prédicrion du thrust mauvaise
+    R = [10 0 0; 0 5 0; 0 0 5];   % baro hyper noisy
+    Q = [1 0 0; 0 1 0; 0 0 5];     % prédicrion du thrust mauvaise
     [x_hat(:,i), x(:,i)] = update(kalman, z(:,i), R, Q, cd(i));
     
 %     subplot(3,1,1)
@@ -115,27 +115,31 @@ end
 t = t(1:1:end-1);
 
 subplot(3,1,1)
-plot_pos = plot(t, x_hat(1,:)', t, z(1,1:end-1)', t, x(1,1:end-1)');
-xlim([0 t(end)]);
-%ylim([-20 260]);
-title('altitude');
-legend('Prediction','Measurment','Correction')
+plot_pos = plot(t, x_hat(1,:)','--', t, z(1,1:end-1)', t, x(1,1:end-1)');
+xlim([0 8]);
+ylim([0 260]);
+title('Altitude [m]');
+legend('Prediction','Measurement','Estimator')
+set(gca,'fontsize', 14);
 grid on
 
 subplot(3,1,2)
-plot_speed = plot(t, x_hat(2,:)',t, z(2,1:end-1)', t, x(2,1:end-1)');
-legend('Prediction','Measurment','Correction')
-xlim([0 t(end)]);
-%ylim([-20 260]);
-title('speed');
+plot_speed = plot(t, x_hat(2,:)','--',t, z(2,1:end-1)', t, x(2,1:end-1)');
+legend('Prediction','Measurement','Estimator')
+xlim([0 8]);
+ylim([-5 70]);
+title('Speed [m/s]');
+set(gca,'fontsize', 14);
 grid on
 
 subplot(3,1,3)
-plot_acc = plot(t, x_hat(3,:)',t, z(3,1:end-1)', t, x(3,1:end-1)');
-legend('Prediction','Measurment','Correction')
-xlim([0 t(end)]);
-%ylim([-20 260]);
-title('acceleration');
+plot_acc = plot(t, x_hat(3,:)','--',t, z(3,1:end-1)', t, x(3,1:end-1)');
+legend('Prediction','Measurement','Estimator')
+xlim([0 8]);
+ylim([-10 70]);
+title('Acceleration [m/s^2]');
+set(gca,'fontsize', 14);
+xlabel('Time [s]')
 grid on
 
 drawnow
