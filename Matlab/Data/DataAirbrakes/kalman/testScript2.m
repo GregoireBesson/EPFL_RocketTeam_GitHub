@@ -82,28 +82,28 @@ for i = 1:length(z)-1
     Q = [1 0 0; 0 1 0; 0 0 5];     % prédicrion du thrust mauvaise
     [x_hat(:,i), x(:,i)] = update(kalman, z(:,i), R, Q);
     
-%     subplot(3,1,1)
-%     plot_pos = plot(t(1:i), z(1,1:i)', t(1:i), x(1,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('altitude');
-%     grid on
-% 
-%     subplot(3,1,2)
-%     plot_speed = plot(t(1:i), z(2,1:i)', t(1:i), x(2,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('speed');
-%     grid on
-% 
-%     subplot(3,1,3)
-%     plot_acc = plot(t(1:i), z(3,1:i)', t(1:i), x(3,1:i)');
-%     xlim([0 t(end)]);
-%     ylim([-20 260]);
-%     title('acceleration');
-%     grid on
-% 
-%     drawnow
+    subplot(3,1,1)
+    plot_pos = plot(t(1:i), z(1,1:i)', t(1:i), x(1,1:i)');
+    xlim([0 t(end)]);
+    ylim([-20 260]);
+    title('altitude');
+    grid on
+
+    subplot(3,1,2)
+    plot_speed = plot(t(1:i), z(2,1:i)', t(1:i), x(2,1:i)');
+    xlim([0 t(end)]);
+    ylim([-20 260]);
+    title('speed');
+    grid on
+
+    subplot(3,1,3)
+    plot_acc = plot(t(1:i), z(3,1:i)', t(1:i), x(3,1:i)');
+    xlim([0 t(end)]);
+    ylim([-20 260]);
+    title('acceleration');
+    grid on
+
+    drawnow
 end
 
 % Final plots
