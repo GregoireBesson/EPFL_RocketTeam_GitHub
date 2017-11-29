@@ -3,8 +3,10 @@ function motor_init( roro )
     % Reads the .eng thrust file of the motors and calculates the reletive 
     % the reletive properties of the motor. 
     
+    
     % Extracting thrust curve
-    R1 = 4;
+    %R1 = 4; %for Aerotech motor
+    R1 = 2; % Cesaroni motor
     C1 = 0;
     motorname = char(roro.motorname);
     motordata = dlmread(motorname,'',R1,C1);
@@ -13,8 +15,8 @@ function motor_init( roro )
     % Very strange way of reading mass of motor amd propellent from the
     % file
     fid = fopen(motorname);
-    tline = fgets(fid);
-    tline = fgets(fid);
+    %tline = fgets(fid);    %comments two fgets for cesaroni motor
+    %tline = fgets(fid);
     tline = fgets(fid);
     tline = fgets(fid);
     C = strsplit(tline);
