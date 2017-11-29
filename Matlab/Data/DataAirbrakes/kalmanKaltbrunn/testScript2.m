@@ -30,7 +30,7 @@ CdClose = 0.1992;
 tbrakes = [0 topen1 topen1+150 tclose1 tclose1+150 topen2 topen2+150 tclose2 tclose2+150 topen3 topen3+150 tclose3 tclose3+150 topen4 topen4+150];
 tbrakes = [tbrakes/1000 t(end)];
 cdtmp = [CdClose CdClose CdOpen CdOpen CdClose CdClose CdOpen CdOpen CdClose CdClose CdOpen CdOpen CdClose CdClose CdOpen CdOpen];
-cd = interp1(tbrakes, cdtmp,t)
+cd = interp1(tbrakes, cdtmp,t);
 % initialisation du filtre de kalman
 init = struct;
 init.P = [.5 0 0; 0 .5 0; 0 0 .5];

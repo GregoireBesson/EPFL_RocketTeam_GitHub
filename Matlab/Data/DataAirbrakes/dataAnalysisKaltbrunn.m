@@ -483,3 +483,11 @@ legend('Acc [m/s^2]', 'Velocity [m/s]', 'Altitude [m]')
 xlabel('Time [ms]');
 xlim([t0 tApogee]);
 set(gca,'fontsize', 16);
+
+%% Speed vs heigh
+
+figure(12)
+hold on 
+grid on
+plot(altCut(cut2),velocityFromAcc(cut2),'Linewidth',1.5)
+
