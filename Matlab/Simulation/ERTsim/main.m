@@ -29,7 +29,7 @@ plot3(state(:,1),state(:,2),state(:,3))
 xlabel('x(m)')
 ylabel('y (m)')
 zlabel('Height (m)')
-axis([-500 500 -500 500 0 3000])
+axis([-1500 1500 -1500 1500 0 3000])
 h_max=max(state(:,3))
 
 
