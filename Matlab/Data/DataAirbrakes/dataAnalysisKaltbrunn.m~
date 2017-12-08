@@ -105,10 +105,10 @@ gz = gz(cut);
 % angle from gyroscope integration
 Pitch = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
 Pitch = [0; Pitch];
-Roll = cumsum(gy(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
-Roll = [0; Roll];
-Yaw = cumsum(gz(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
-Yaw = [0; Yaw];
+Roll = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
+Pitch = [0; Pitch];
+Pitch = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
+Pitch = [0; Pitch];
 
 % compute the speed from the pitot sensor
 deltaPoffset = deltaP(10);
@@ -223,7 +223,7 @@ grid on
 
 figure(4)
 subplot(3,1,1)
-plot(timeMillisCut,gx,'Linewidth',1.5)
+plot(timeMillis,gx,'Linewidth',1.5)
 ylabel('g_x [°/s]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
@@ -239,7 +239,7 @@ set(gca,'fontsize', 16);
 grid on
 
 subplot(3,1,2)
-plot(timeMillisCut,gy,'Linewidth',1.5)
+plot(timeMillis,gy,'Linewidth',1.5)
 ylabel('g_y [°/s]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
@@ -254,7 +254,7 @@ set(gca,'fontsize', 16);
 grid on
 
 subplot(3,1,3)
-plot(timeMillisCut,gz,'Linewidth',1.5)
+plot(timeMillis,gz,'Linewidth',1.5)
 ylabel('g_z [°/s]')
 xlabel('Time [ms]');
 xlim([minMillis maxMillis]);
@@ -501,14 +501,3 @@ hold on
 grid on
 plot(altCut(cut2),velocityFromAcc(cut2),'Linewidth',1.5)
 
-%% Angles
-figure ()
-hold on
-grid on
-plot(timeMillisCut,Pitch)
-plot(timeMillisCut,Roll)
-plot(timeMillisCut,Yaw)
-legend('Pitch', 'Roll', 'Yaw');
-xlabel('Time [ms]');
-ylabel('Angles [?]')
-set(gca,'fontsize', 16);

@@ -5,9 +5,9 @@ function [ gx, gy, gz ] = cal_gyr( gx, gy, gz )
 
 % gyro calibration
 
-gx_offset = mean(gx(220000:300000));
-gy_offset = mean(gy(220000:300000));
-gz_offset = mean(gz(220000:300000));
+gx_offset = mean(gx);
+gy_offset = mean(gy);
+gz_offset = mean(gz);
 gx = (gx-gx_offset)*pi/(16.4*180);
 gy = (gy-gy_offset)*pi/(16.4*180);
 gz = (gz-gz_offset)*pi/(16.4*180);
