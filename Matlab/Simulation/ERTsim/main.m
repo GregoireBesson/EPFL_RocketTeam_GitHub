@@ -75,5 +75,5 @@ grid on
 %plotData(log, roro);
 
 %% Save data for Cd Table
-h02 = h_max - state(1:end-1,3);
-s02 = speed; 
+h07 = h_max - state(1:end-1,3);
+s07 = speed; 

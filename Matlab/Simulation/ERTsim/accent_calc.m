@@ -108,7 +108,7 @@ function  [t, state] = accent_calc( roro,tend )
         Fg = [0, 0, -mg]';
         
         % Axial Forces
-        CD = roro.Cd + roro.Cdbrake + 0.2;
+        CD = roro.Cd + roro.Cdbrake + 0.7;
         Famag = 0.5*env.rho*Vmag^2*roro.A_ref*CD;   
         
         Fa = -Famag*RA;
