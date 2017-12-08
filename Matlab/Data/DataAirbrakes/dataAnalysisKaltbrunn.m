@@ -476,8 +476,8 @@ set(gca,'fontsize', 16);
     rho = 1.225;
     Aref = 0.0082;
 
-CdOpen = -pOpen(1)/(.5*rho*Aref)
-CdClose = -pClose(1)/(.5*rho*Aref)
+CdOpen = -pOpen(1)/(.5*rho*Aref);
+CdClose = -pClose(1)/(.5*rho*Aref);
 
 %% Superpose Acc / Speed / Alt
 
@@ -511,5 +511,5 @@ plot(timeMillisCut,Roll*RADtoDEG)
 plot(timeMillisCut,Yaw*RADtoDEG)
 legend('Pitch', 'Roll', 'Yaw');
 xlabel('Time [ms]');
-ylabel('Angles [?]')
+ylabel('Angles [Deg]')
 set(gca,'fontsize', 16);
