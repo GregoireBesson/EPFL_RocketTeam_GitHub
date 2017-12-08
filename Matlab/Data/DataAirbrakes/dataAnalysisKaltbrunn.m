@@ -103,11 +103,11 @@ gy = gy(cut);
 gz = gz(cut);
 [gx, gy, gz] = cal_gyr(gx, gy, gz);
 % angle from gyroscope integration
-Pitch = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
+Pitch = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Pitch = [0; Pitch];
-Roll = cumsum(gy(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
+Roll = cumsum(gy(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Roll = [0; Roll];
-Yaw = cumsum(gz(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1)));
+Yaw = cumsum(gz(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Yaw = [0; Yaw];
 
 % compute the speed from the pitot sensor
@@ -505,9 +505,10 @@ plot(altCut(cut2),velocityFromAcc(cut2),'Linewidth',1.5)
 figure ()
 hold on
 grid on
-plot(timeMillisCut,Pitch)
-plot(timeMillisCut,Roll)
-plot(timeMillisCut,Yaw)
+RADtoDEG = 180/pi;
+plot(timeMillisCut,Pitch*RADtoDEG)
+plot(timeMillisCut,Roll*RADtoDEG)
+plot(timeMillisCut,Yaw*RADtoDEG)
 legend('Pitch', 'Roll', 'Yaw');
 xlabel('Time [ms]');
 ylabel('Angles [?]')
