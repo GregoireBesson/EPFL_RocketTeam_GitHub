@@ -97,17 +97,25 @@ velocityFromAcc = [velocityFromAcc;0];
 altFromAcc = cumsum((velocityFromAcc(1:end-1)).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 altFromAcc = [altFromAcc;0];
 
-% gyroscope calibraiton
+% determine the orientation of the rocket on the launchpad from acc
+before_start = timeMillis>(t0-5.5e3) & timeMillis<(t0-0.5e3);
+Pitch0 = atan2(mean(az(before_start)),-mean(ay(before_start)));
+Yaw0 = atan2(mean(ax(before_start)),-mean(ay(before_start)));
+
+% gyroscope calibration, need to enter begin and end times of a rest period
+% (before or after the flight)
+t0_rest = 3.8e4;
+t1_rest = timeMillis(end);
+[gx, gy, gz] = cal_gyr( gx, gy, gz, t0_rest, t1_rest, timeMillis);
 gx = gx(cut);
 gy = gy(cut);
 gz = gz(cut);
-[gx, gy, gz] = cal_gyr(gx, gy, gz);
 % angle from gyroscope integration
-Pitch = cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
+Pitch = Pitch0 + cumsum(gx(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Pitch = [0; Pitch];
 Roll = cumsum(gy(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Roll = [0; Roll];
-Yaw = cumsum(gz(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
+Yaw = Yaw0 + cumsum(gz(1:end-1).*(timeMillisCut(2:end)-timeMillisCut(1:end-1))/1000);
 Yaw = [0; Yaw];
 
 % compute the speed from the pitot sensor
@@ -502,12 +510,12 @@ grid on
 plot(altCut(cut2),velocityFromAcc(cut2),'Linewidth',1.5)
 
 %% Angles
+RADtoDEG = 180/pi;
 figure ()
 hold on
 grid on
-RADtoDEG = 180/pi;
 plot(timeMillisCut,Pitch*RADtoDEG)
-plot(timeMillisCut,Roll*RADtoDEG)
+%plot(timeMillisCut,Roll*RADtoDEG)
 plot(timeMillisCut,Yaw*RADtoDEG)
 legend('Pitch', 'Roll', 'Yaw');
 xlabel('Time [ms]');
