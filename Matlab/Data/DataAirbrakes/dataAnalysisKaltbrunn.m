@@ -517,6 +517,8 @@ grid on
 plot(timeMillisCut,Pitch*RADtoDEG)
 %plot(timeMillisCut,Roll*RADtoDEG)
 plot(timeMillisCut,Yaw*RADtoDEG)
+inclination = atan(sqrt(tan(Pitch).^2+tan(Yaw).^2))
+plot(timeMillisCut,inclination*RADtoDEG)
 legend('Pitch', 'Roll', 'Yaw');
 xlabel('Time [ms]');
 ylabel('Angles [Deg]')

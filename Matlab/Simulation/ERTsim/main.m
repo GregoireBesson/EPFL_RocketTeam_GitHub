@@ -15,8 +15,13 @@ motor_init( roro ); %loads rocket motor
 env = environement(350, 15, 96000, roro );
 
 %% Phase: Accent
+load('airbrakes_controller_table.mat')
+controller = struct;
+controller.table = table;
+controller.v = v;
+controller.Cd = Cd;
 tend = 30;  %simulate 30 seconds
-[t, state] = accent_calc(roro,tend);
+[t, state] = accent_calc(roro,tend,controller);
 
 %% Plot the trajectory
 figure(1);
@@ -75,5 +80,9 @@ grid on
 %plotData(log, roro);
 
 %% Save data for Cd Table
-h07 = h_max - state(1:end-1,3);
-s07 = speed; 
+h0 = h_max - state(1:end-1,3);
+s0 = state(:,10)/roro.Mass;
+%Xdot=P./roro.Mass;  % P = mv -> v = P/m
+%s07 = speed; 
+
+

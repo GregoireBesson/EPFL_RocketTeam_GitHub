@@ -108,7 +108,7 @@ for i = 1:length(z)-1
     % compute the covariance matrixes of the meausrement noise
     R = [varalt 0 0; 0 varspeed 0; 0 0 4.0707e-04];
     % compute the covariance matrixes of the process noise
-    Q = [0.0001 0 0; 0 7 0; 0 0 15];
+    Q = [0.0001 0 0; 0 7 0; 0 0 .001];
 %4.0707e-04
 
 %     subplot(3,1,1)
@@ -153,10 +153,11 @@ grid on
 
 subplot(3,1,2)
 plot_speed = plot(t, x_hat(2,:)',t, z(2,1:end-1)', t, x(2,1:end-1)');
+ylim([-10 70])
 yyaxis right
 varspeed = 3.4630e+05 * 9./(400*rho*abs(x(2,1:end-1)));
 plot(t, varspeed)
-ylim([0 1e3])
+ylim([-1e2 7e2])
 legend('Prediction','Measurment','Correction', 'var')
 xlim([0 t(end)]);
 %ylim([-20 260]);
@@ -171,7 +172,7 @@ plot(t, varacc)
 ylim([0 .00009])
 legend('Prediction','Measurment','Correction', 'var')
 xlim([0 t(end)]);
-%ylim([-20 260]);
+ylim([0 10e-6]);
 title('acceleration');
 grid on
 

@@ -78,3 +78,43 @@ scatter(h07,s07,'.');
 legend('Cd = 0','Cd = 0.1','Cd = 0.2','Cd = 0.3','Cd = 0.4','Cd = 0.5','Cd = 0.6','Cd = 0.7') 
 xlabel('distance to apogee [m]')
 ylabel('speed [m/s]')
+
+%% resample
+
+Cd = [0 .1 .2 .3 .4 .5 .6 .7]
+vmax = min([max(s0) max(s01) max(s02) max(s03) max(s04) max(s05) max(s06) max(s07)]);
+vmin = 0;
+
+v = vmin:1:vmax;
+table(:,1) = interp1(s0, h0, v)';
+table(:,2) = interp1(s01, h01, v)';
+table(:,3) = interp1(s02, h02, v)';
+table(:,4) = interp1(s03, h03, v)';
+table(:,5) = interp1(s04, h04, v)';
+table(:,6) = interp1(s05, h05, v)';
+table(:,7) = interp1(s06, h06, v)';
+table(:,8) = interp1(s07, h07, v)';
+table(isnan(table)) = 0;
+
+%% test
+
+currentV = 160;
+currentH = 100;
+
+iv = find(v>currentV,1,'first');
+'closest higher speed in the table:'
+v(iv)
+'heigth available:'
+table(iv,:)
+iCd = find(table(iv,:)<currentH,1,'first')
+if length(iCd) == 0
+    iCd = 8;
+end
+'choosen heigth:'
+table(iv,iCd)
+'corresponding Cd:'
+Cd(iCd)
+
+
+
+

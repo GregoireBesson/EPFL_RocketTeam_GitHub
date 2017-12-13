@@ -1,4 +1,4 @@
-function  [t, state] = accent_calc( roro,tend )
+function  [t, state] = accent_calc( roro,tend,controller)
 %Function calculates the assent phase of the rocket
     global env;
     global log;   
@@ -8,13 +8,14 @@ function  [t, state] = accent_calc( roro,tend )
     
     % Event function to stop at max height
     options = odeset('Events',@event_function);
-    
-    % Solve flight using ODE45
-    [t, state]= ode45(@flight,tspan,state_0,options);
 
+    % Solve flight using ODE45
+
+    %[t, state]= ode45(@flight,tspan,state_0,options);
+    [t,state] = ode45(@(t,state) flight(t,state,controller), tspan, state_0);
     % --------------------------------------------------------------------------
     %% Equations of motion discribed to be solved in ode45 
-    function state_dot = flight(t,state)
+    function state_dot = flight(t,state,controller)
         
         % TODO: put condition on burn data so it does not excecute after
         % burnout
@@ -95,20 +96,30 @@ function  [t, state] = accent_calc( roro,tend )
             roro.brake_t = roro.brake_t + roro.deltat;
 
         end
-       if(roro.brake_t > 4.5)
-           roro.Cdbrake = 0.0;
-       end
-%         
-%        if(roro.time > 1.3)
-%            roro.Cdbrake = 0.3222;
-%        end      
+%         if(roro.brake_t > 4.5)
+%            roro.Cdbrake = 0.0;
+%         end
+        
+%         if(roro.time > 4.5)
+%             iv = find(controller.v>V(3),1,'first');
+%             if length(iv) == 0
+%                 iv = 1;
+%             end
+% 
+%             iCd = find(controller.table(iv,:)<(2750-60-X(3)),1,'first');
+%             if length(iCd) == 0
+%                 iCd = 8;
+%             end
+%             roro.Cdbrake = controller.Cd(iCd);
+%             %roro.Cdbrake = 0.3222;
+%         end      
         Fthrust = roro.T*RA;
         
         mg = roro.Mass*env.g;
         Fg = [0, 0, -mg]';
         
         % Axial Forces
-        CD = roro.Cd + roro.Cdbrake + 0.7;
+        CD = roro.Cd + roro.Cdbrake;
         Famag = 0.5*env.rho*Vmag^2*roro.A_ref*CD;   
         
         Fa = -Famag*RA;
