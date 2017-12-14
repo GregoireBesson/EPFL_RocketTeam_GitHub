@@ -36,8 +36,8 @@ mass(1) = mass(2); % je sais pas pourquoi il y a 1.5 au début de la mass
 % closing from kaltbrunn test, to fit the theoritical model
 load('tbrakes.mat')
 % drag coefficients identified on the acc vs speed plot (least squares)
-CdOpen = 0.4069;
-CdClose = 0.1992;
+CdOpen = 0.7375;
+CdClose = 0.3611;
 % generate the Cd vector
 tbrakes = [0 topen1 topen1+150 tclose1 tclose1+150 topen2 topen2+150 tclose2 tclose2+150 topen3 topen3+150 tclose3 tclose3+150 topen4 topen4+150];
 tbrakes = [tbrakes/1000 t(end)];
@@ -164,7 +164,8 @@ legend('Prediction','Measurment','Correction', 'var')
 grid on
 
 subplot(3,1,2)
-plot_speed = plot(t, x_hat(2,:)',t, z(2,1:end-1)', t, x(2,1:end-1)', t, x(2,1:end-1)*cos(inclination));
+cosi = cos(inclination);
+plot_speed = plot(t, x_hat(2,:)',t, z(2,1:end-1)', t, x(2,1:end-1)', t, x(2,1:end-1)'.*cosi(1:length(x(2,1:end-1))));
 ylim([-10 70])
 yyaxis right
 varspeed = 3.4630e+05 * 9./(400*rho*abs(x(2,1:end-1)));
