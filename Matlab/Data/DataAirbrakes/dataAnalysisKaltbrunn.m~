@@ -529,17 +529,14 @@ set(gca,'fontsize', 16);
 % should be equal to the coeficient k.
 
 % The Drag Coef. Cd can be therefore be computed:
-% air density:
 rho = 1.225;
 %Aref = 0.0082;
-% Rocket diameter (in meter):
+% Rocket diameter in meter:
 D = 0.12;
-Aref = pi*(D/2)^2;
-% Dry mass of the rocket (in kg):
-m = 2.5;
+Aref = pi*(D/2)^2;2
 
-CdOpen = -pOpen(1)*m/(.5*rho*Aref);
-CdClose = -pClose(1)*m/(.5*rho*Aref);
+CdOpen = -pOpen(1)/(.5*rho*Aref);
+CdClose = -pClose(1)/(.5*rho*Aref);
 
 %% Superpose Acc / Speed / Alt
 
