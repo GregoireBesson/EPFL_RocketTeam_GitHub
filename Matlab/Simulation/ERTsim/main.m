@@ -20,7 +20,7 @@ controller = struct;
 controller.table = table;
 controller.v = v;
 controller.Cd = Cd;
-tend = 30;  %simulate 30 seconds
+tend = 25;  %simulate 30 seconds
 [t, state] = accent_calc(roro,tend,controller);
 
 %% Plot the trajectory
@@ -67,6 +67,9 @@ hold on
 plot(time,acceleration)
 xlabel('Time(s)')
 ylabel('Acceleration [m/s^2]')
+% yyaxis right
+% plot(time,Cd_log)
+% ylabel('airbrakes drag coefficient')
 legend('Simulation acceleration')
 grid on
 %t2 = log(:,12);
@@ -77,12 +80,26 @@ grid on
 % hold on
 
 %% Plot flight and stability data
-%plotData(log, roro);
+plotData(log, roro);
 
 %% Save data for Cd Table
-h0 = h_max - state(1:end-1,3);
-s0 = state(:,10)/roro.Mass;
-%Xdot=P./roro.Mass;  % P = mv -> v = P/m
-%s07 = speed; 
+% h07 = h_max - state(1:end-1,3);
+% s07 = state(:,10)/roro.Mass; % P = mv -> v = P/m
+%%
+figure
+hold on
+grid on
+scatter(h_max - state(1:end,3),state(:,10)/roro.Mass,'.');
+scatter(controller.table(:,1),controller.v,'.');
+scatter(controller.table(:,2),controller.v,'.');
+scatter(controller.table(:,3),controller.v,'.');
+scatter(controller.table(:,4),controller.v,'.');
+scatter(controller.table(:,5),controller.v,'.');
+scatter(controller.table(:,6),controller.v,'.');
+scatter(controller.table(:,7),controller.v,'.');
+scatter(controller.table(:,8),controller.v,'.');
+legend('simulator','Cd = 0','Cd = 0.1','Cd = 0.2','Cd = 0.3','Cd = 0.4','Cd = 0.5','Cd = 0.6','Cd = 0.7') 
+xlabel('distance to apogee [m]')
+ylabel('speed [m/s]')
 
 

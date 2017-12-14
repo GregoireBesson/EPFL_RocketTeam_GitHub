@@ -1,7 +1,7 @@
 function  [t, state] = accent_calc( roro,tend,controller)
 %Function calculates the assent phase of the rocket
     global env;
-    global log;   
+    global log;
     state_0 = [roro.X; roro.Q; roro.P; roro.L];
     timeStep = 0.005;   
     tspan = 0:timeStep:tend;
@@ -96,23 +96,24 @@ function  [t, state] = accent_calc( roro,tend,controller)
             roro.brake_t = roro.brake_t + roro.deltat;
 
         end
-%         if(roro.brake_t > 4.5)
-%            roro.Cdbrake = 0.0;
+%         if(roro.brake_t > 4)
+%            roro.Cdbrake = 0;
 %         end
         
-%         if(roro.time > 4.5)
-%             iv = find(controller.v>V(3),1,'first');
-%             if length(iv) == 0
-%                 iv = 1;
-%             end
-% 
-%             iCd = find(controller.table(iv,:)<(2750-60-X(3)),1,'first');
-%             if length(iCd) == 0
-%                 iCd = 8;
-%             end
-%             roro.Cdbrake = controller.Cd(iCd);
-%             %roro.Cdbrake = 0.3222;
-%         end      
+        targetAlt = 2710;
+        if(roro.time > 4.5)
+            iv = find(controller.v>V(3),1,'first');
+            if length(iv) == 0
+                iv = 1;
+            end
+
+            iCd = find(controller.table(iv,:)<(targetAlt-X(3)),1,'first');
+            if length(iCd) == 0
+                iCd = 8;
+            end
+            roro.Cdbrake = controller.Cd(iCd);
+            %roro.Cdbrake = 0.3222;
+        end      
         Fthrust = roro.T*RA;
         
         mg = roro.Mass*env.g;

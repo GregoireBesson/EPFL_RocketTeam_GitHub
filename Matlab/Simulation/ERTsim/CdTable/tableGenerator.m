@@ -14,14 +14,14 @@ load('Cd07.mat')
 % load('Cd09.mat')
 % load('Cd1.mat')
 
-[~,I] = max(s0 ); s0  = s0 (I:end); h0  = h0 (I:end);
-[~,I] = max(s01); s01 = s01(I:end); h01 = h01(I:end);
-[~,I] = max(s02); s02 = s02(I:end); h02 = h02(I:end);
-[~,I] = max(s03); s03 = s03(I:end); h03 = h03(I:end);
-[~,I] = max(s04); s04 = s04(I:end); h04 = h04(I:end);
-[~,I] = max(s05); s05 = s05(I:end); h05 = h05(I:end);
-[~,I] = max(s06); s06 = s06(I:end); h06 = h06(I:end);
-[~,I] = max(s07); s07 = s07(I:end); h07 = h07(I:end);
+[~,I] = max(s0 );J = find(s0 <0,1); s0  = s0 (I:J-1); h0  = h0 (I:J-1);
+[~,I] = max(s01);J = find(s01<0,1); s01 = s01(I:J-1); h01 = h01(I:J-1);
+[~,I] = max(s02);J = find(s02<0,1); s02 = s02(I:J-1); h02 = h02(I:J-1);
+[~,I] = max(s03);J = find(s03<0,1); s03 = s03(I:J-1); h03 = h03(I:J-1);
+[~,I] = max(s04);J = find(s04<0,1); s04 = s04(I:J-1); h04 = h04(I:J-1);
+[~,I] = max(s05);J = find(s05<0,1); s05 = s05(I:J-1); h05 = h05(I:J-1);
+[~,I] = max(s06);J = find(s06<0,1); s06 = s06(I:J-1); h06 = h06(I:J-1);
+[~,I] = max(s07);J = find(s07<0,1); s07 = s07(I:J-1); h07 = h07(I:J-1);
 % [~,I] = max(s08); s08 = s08(I:end); h08 = h08(I:end);
 % [~,I] = max(s09); s09 = s09(I:end); h09 = h09(I:end);
 % [~,I] = max(s1 ); s1  = s1 (I:end); h1  = h1 (I:end);
