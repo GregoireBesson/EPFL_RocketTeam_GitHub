@@ -1,0 +1,18 @@
+Lenght,         2.72
+Cone Lenght, 	0.5
+Diameter,       0.12
+Number of Fins, 3
+Fin height, 	9e-2
+Fin base length,24e-2
+Fin top length,	12e-2
+Fin Sweep angle,56.31
+Fin thickness, 	3e-3
+Mass,           17.525
+Ixx,            0.04
+Iyy,            14.61
+Izz,            14.61
+Xcm,            1.49
+Launchpin height, 17e-3
+Launchpin Dia,    30e-3
+Rail angle,       90
+Cesaroni_M1590.eng, 0
