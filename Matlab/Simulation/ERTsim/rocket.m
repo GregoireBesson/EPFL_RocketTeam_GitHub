@@ -79,7 +79,7 @@ classdef rocket <handle
                 obj.L_pinDia = prop(15);
                 obj.L_pinH = prop(16);
                 % Launch Rail Heading
-                Ra =  -0.1745%-> launch-0.0524; %deg2rad(90-prop(17));                
+                Ra =  -0.1745; %deg2rad(90-prop(17));%-0.1745%-> launch-0.0524;                
                 Rax = [0.1684;    0.985;         0];
                 obj.Q=[cos(Ra/2) sin(Ra/2)*Rax(1) sin(Ra/2)*Rax(2) sin(Ra/2)*Rax(3)]';
                 

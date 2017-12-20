@@ -577,8 +577,11 @@ plot(timeMillisCut,Pitch*RADtoDEG,'g','Linewidth',1.5)
 %plot(timeMillisCut,Roll*RADtoDEG,'Linewidth',1.5)
 plot(timeMillisCut,Yaw*RADtoDEG,'b','Linewidth',1.5)
 plot(timeMillisCut,inclination*RADtoDEG,'r','Linewidth',1.5)
-legend('Pitch', 'Yaw', 'Inclination');
+legend('Pitch', 'Roll', 'Inclination');
 xlabel('Time [ms]');
 ylabel('Angles [Deg]')
 set(gca,'fontsize', 16);
-vline(7782,'r--','Apogee')    
+vline(t0,'r--','Burn')
+vline(7782,'r--','Apogee')
+vline(tApogee,'r--','Apogee')
+    
