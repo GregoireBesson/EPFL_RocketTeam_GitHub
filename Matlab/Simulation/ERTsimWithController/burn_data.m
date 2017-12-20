@@ -2,15 +2,17 @@ function burn_data( roro )
     % Burn data function is executed at the start of each iteration in the
     % solver. This updates the motor mass and inertias by assuming the
     % impulse generated is proportional to the mass consumed
-    t= roro.time;
-    T=roro.T; % Thrust 
-    tt=roro.motordata(:,1);
-    TT=roro.motordata(:,2);
-    ind= find(tt<t); % Finds index less then curretn time
-    ind=ind(end);
-    tt =[tt(1:ind); t]; % Burn uptill 
-    TT= [TT(1:ind); T];
-    roro.impulseGen =  trapz(tt,TT); % impulse generated upto that point.
+    
+    t = roro.time;
+    T = roro.T;                     % Thrust 
+    tt = roro.motordata(:,1);
+    TT = roro.motordata(:,2);
+    ind = find(tt<t);               % Finds index less then current time
+    ind = ind(end);
+    tt = [tt(1:ind); t];            % Burn uptill 
+    TT = [TT(1:ind); T];
+    roro.impulseGen = trapz(tt,TT); % impulse generated upto that point.
+    
     propM_used = roro.propM_tot/roro.Motor_impulse*roro.impulseGen;
     roro.propM_current = roro.propM_tot  - propM_used; % Remaining prop mass
     if(roro.deltat == 0)

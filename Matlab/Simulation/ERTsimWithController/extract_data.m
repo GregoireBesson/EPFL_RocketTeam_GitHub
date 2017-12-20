@@ -5,7 +5,7 @@ function a = extract_data ( state,t)
     global env
     roro_data =rocket(init_rocket());
     motor_init( roro_data );
-    env = environement(1400, 25, 86000, roro_data );
+    env = environement(350, 15, 96000, roro_data );
     %%
     roro_data.X = state(1,1:3)';
     roro_data.Q = state(1,4:7)'; 
@@ -66,8 +66,11 @@ function a = extract_data ( state,t)
         roro_data.alpha = alpha;
         
         %% Log Data
+        acc_e = [roro_data.Pdot(1)/roro_data.Mass, roro_data.Pdot(2)/roro_data.Mass, roro_data.Pdot(3)/roro_data.Mass]';
+        acc_R= Rmatrix'*acc_e;
        
-        logData(roro_data.alpha, roro_data.Cd, Cda, roro_data.Xcm, roro_data.Mass, Vmag, Xcp, zeta, Ssm, Ssm_B, Ccm, t(i));
+        logData(roro_data.alpha, roro_data.Cd, Cda, roro_data.Xcm, roro_data.Mass, Vmag, Xcp,...
+            zeta, Ssm, Ssm_B, Ccm, t(i), acc_R(3)  );
 
          %logData(roro_data.X(3),roro_data.Cd,t(i)); % Eg roro.Cd for drag norm(Xdot)/env.C
 %          log(i,1) = norm(roro_data.Xdot);

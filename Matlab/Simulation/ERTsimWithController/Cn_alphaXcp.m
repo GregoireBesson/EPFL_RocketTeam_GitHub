@@ -1,18 +1,18 @@
 function [Cn_alpha, Xcp, Cda, zeta, Ssm, Ssm_B, Ccm]=Cn_alphaXcp(roro) 
-    % Takes rocket handle and environment  to calculate Cn, location of cop
+    % Takes rocket handle and environment to calculate Cn, location of CoP
     
     % using barrowman implemented in OpenRocket
     global env
 
-    rho =  env.rho; % density 
-    mu =  env.mu;  % dynamic viscosity 
-    C = env.C; %speed of sound dry air 15C sea level
-    V = norm(roro.Xdot,2);   %ms-1 Mag of characteristic velocity at center of pressure location 
-    M = V/C;
-    Re  = roro.Re;
+    rho =  env.rho;             % air density [kg/m^3]
+    mu =  env.mu;               % dynamic viscosity 
+    C = env.C;                  % speed of sound dry air 15C sea level
+    V = norm(roro.Xdot,2);      % ms-1 Mag of characteristic velocity at center of pressure location 
+    M = V/C;                    % Mach number [.]
+    Re  = roro.Re;              % Reynolds number [.]
 
     % correction for compressible flow 
-    beta = sqrt( 1 - M^2); % M <1
+    beta = sqrt( 1 - M^2);      % M <1
 
     % Rocket dimentions 
     L = roro.Length; 
@@ -132,11 +132,11 @@ function [Cn_alpha, Xcp, Cda, zeta, Ssm, Ssm_B, Ccm]=Cn_alphaXcp(roro)
     lcc = roro.Xcm_prop -roro.Xcm;
     Cda_jet = roro.deltaMass *(lcn^2 - lcc^2);
     
-    % Aerodynamic damping parameter
+    % Aerodynamic damping
     Cda_l = 0.5*rho* V * A_ref *( fin.Cn_alpha*(fin.Xcp-roro.Xcm)^2+...
         cone.Cn_alpha*(cone.Xcp - roro.Xcm)^2 + cyl.Cn_alpha*(cyl.Xcp - roro.Xcm)^2);
     
-    % Damping Moment parameter
+    % Damping Moment Coefficient
     Cda  =  Cda_l+ Cda_jet;
     
     %% Cn_alpha

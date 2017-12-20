@@ -1,37 +1,45 @@
-function  [t, state] = accent_calc( roro,tend )
+function  [t, state] = accent_calc( roro,tend,controller)
 %Function calculates the assent phase of the rocket
     global env;
-    global log;   
+    global log;
     state_0 = [roro.X; roro.Q; roro.P; roro.L];
-    tspan = [0:0.005:tend];
+    timeStep = 0.005;   
+    tspan = 0:timeStep:tend;
     
     % Event function to stop at max height
     options = odeset('Events',@event_function);
-    
-    % Solve flight using ODE45
-    [t, state]= ode45(@flight,tspan,state_0,options);
 
+    % Solve flight using ODE45
+
+    %[t, state]= ode45(@flight,tspan,state_0,options);
+    [t,state] = ode45(@(t,state) flight(t,state,controller), tspan, state_0);
     % --------------------------------------------------------------------------
-    %% Equations of motion discribed to be sloved in ode45 
-    function state_dot = flight(t,state)
-        %TODO: put condition on burn data so it does not excecute after
-        %bunout
+    %% Equations of motion discribed to be solved in ode45 
+    function state_dot = flight(t,state,controller)
         
-        if (t>0)
+        % TODO: put condition on burn data so it does not excecute after
+        % burnout
+        % DONE: but need to find automatically roro.t_Burnout, for now
+        % it is entered by user
+        if (t > 0)
             roro.deltat = t - roro.time;
             roro.time = t;
-            burn_data(roro); % runs each cycle to update motor stats 
-            
+            % runs each cycle to update motor stats
+            %if (t < roro.t_Burnout)
+                burn_data(roro);    
+            %end
         end
-        X= state(1:3);
-        Q= state(4:7);
-        P= state(8:10);
-        L= state(11:13);
-
-        roro.X= state(1:3);
-        roro.Q= state(4:7);
-        roro.P= state(8:10);
-        roro.L= state(11:13);
+        
+        X = state(1:3);     % Position x, y, z   
+        Q = state(4:7);     % Angle in quarternions  
+        P = state(8:10);    % Linear Momentum  
+        L = state(11:13);   % Angular momentum
+        
+        roro.X = X;
+        roro.Q = Q;
+        roro.P = P;
+        roro.L = L;
+        
         % Rotation matrix for transforming body coord to ground coord
         Rmatrix= quat2rotm(roro.Q');
         
@@ -42,11 +50,12 @@ function  [t, state] = accent_calc( roro,tend )
         CnXcp = roro.CnXcp;
         Cn= CnXcp(1);
         Xcp= CnXcp(2);
-        Cda = CnXcp(3); % Damping coefficient
-        zeta = CnXcp(4); % Damping ratio
-        Ssm = CnXcp(5); % Static stability margin
+        Cda = CnXcp(3);     % Damping coefficient
+        zeta = CnXcp(4);    % Damping ratio
+        Ssm = CnXcp(5);     % Static stability margin
+        
         %% ------- X Velocity-------
-        Xdot=P./roro.Mass;
+        Xdot=P./roro.Mass;  % P = mv -> v = P/m
         
         %% ------- Q Angular velocity--------- in quarternians 
         invIbody = roro.Ibody\eye(3); %inv(roro.Ibody); inverting matrix
@@ -80,15 +89,41 @@ function  [t, state] = accent_calc( roro,tend )
         Vnorm = normalize(V);
         alpha = acos(dot(Vnorm,RA));
         roro.alpha = alpha;
+        
         %% ------- P Forces = rate of change of Momentums-------
+        
+        if (X(3) > 15 && roro.brake_t < 4.5)
+            roro.brake_t = roro.brake_t + roro.deltat;
 
+        end
+%         if(roro.brake_t > 4)
+%            roro.Cdbrake = 0;
+%         end
+        
+        targetAlt = 2710;
+        if(roro.time > 4.5)
+            iv = find(controller.v>V(3),1,'first');
+            if length(iv) == 0
+                iv = 1;
+            end
+
+            iCd = find(controller.table(iv,:)<(targetAlt-X(3)),1,'first');
+            if length(iCd) == 0
+                iCd = 8;
+            end
+            % Controller on:
+            roro.Cdbrake = controller.Cd(iCd);
+            % Controller off:
+            roro.Cdbrake = 0;
+        end      
         Fthrust = roro.T*RA;
         
         mg = roro.Mass*env.g;
         Fg = [0, 0, -mg]';
         
         % Axial Forces
-        Famag = 0.5*env.rho*Vmag^2*roro.A_ref*roro.Cd; % To DO: make axial 
+        CD = roro.Cd + roro.Cdbrake;
+        Famag = 0.5*env.rho*Vmag^2*roro.A_ref*CD;   
         
         Fa = -Famag*RA;
         

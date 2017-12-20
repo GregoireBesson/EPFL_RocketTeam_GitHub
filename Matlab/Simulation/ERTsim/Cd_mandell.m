@@ -108,11 +108,15 @@ function [Cd]=Cd_mandell(roro)
     Cd_i = 2*Cf_f*(1+2*T_f/l_m)*4*n*(A_fp-A_fe)/(pi*d_f^2);
     % Total drag coefficient at zero angle of attack
     Cd0 = Cd_fb + Cd_b + Cd_f + Cd_i;
-
+    
+    % Drag of camera shell -> base drag and front drag of faring(0.07)
+    A_cam = 142e-6;
+    Cd_cam = (0.12 + 0.13*(M)^2 + 0.07)*A_cam/A_ref;
+    
     % Launch pin drag % estimated from Mandell 
     A_pin = roro.L_pinDia*roro.L_pinH;
     Cd_pin = 2*0.8*A_pin/A_ref; 
-    Cd0 = Cd0 + Cd_pin + 0.2;
+    Cd0 = Cd0 + Cd_pin;
     % compressibility correction
     %% -------Additional drag at AoA-------
     % Alpha
@@ -138,7 +142,7 @@ function [Cd]=Cd_mandell(roro)
     % Fin drag at angle alpha
     Cd_f_alpha = (1.2*A_fp*4/(pi*d_f^2) +3.12*(Kfb +Kbf-1)*A_fe*4/(pi*d_f^2))*alpha^2;
 
-    %% -------Total Drag Coefficient-------
+    %% -------Totol Drag Coefficient-------
     Cd = Cd0 + Cd_b_alpha + Cd_f_alpha;
     Cd = Cd/sqrt(1-M^2);
     CnXcp = roro.CnXcp;

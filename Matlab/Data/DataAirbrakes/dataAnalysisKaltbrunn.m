@@ -158,17 +158,16 @@ altFromPitot = [altFromPitot;0];
 %% Plots of pressure and altitude
 
 % boolean to display events on the plot
-displayInfos = true;
+displayInfos = false;
 
 figure(1)
 title('Data from Baromoter')
 
 subplot(2,1,1)
-plot(timeMillis,press,'Linewidth',1.5)
+plot(timeSec,press,'Linewidth',1.5)
 ylabel('Pressure [hPa]')
-xlabel('Time [ms]');
-xlim([minMillis maxMillis]);
-
+%xlabel('Time [ms]');
+xlim([minSec maxSec]);
 if(displayInfos)
     vline(t0,'r--','Burn')
     vline(tBurnout,'r--','Burnout')
@@ -182,21 +181,20 @@ grid on
 
 subplot(2,1,2)
 hold on
-plot(timeMillis,alt,'Linewidth',1.5)
-plot(timeMillisCut(1:end-1),altFromPitot(1:end-1),'Linewidth',1.5)
-plot(timeMillisCut(1:end-1),altFromAcc(1:end-1),'Linewidth',1.5)
+plot(timeSec,alt,'Linewidth',1.5)
+%plot(timeMillisCut(1:end-1),altFromPitot(1:end-1),'Linewidth',1.5)
+%plot(timeMillisCut(1:end-1),altFromAcc(1:end-1),'Linewidth',1.5)
 ylabel('Altitude [m]')
-xlabel('Time [ms]');
-xlim([minMillis maxMillis]);
-legend('From Baro','From Pitot','From Acc')
-if(displayInfos)
+xlabel('Time [s]');
+xlim([minSec maxSec]);
+ylim([-10 260]);
+%legend('From Baro','From Pitot','From Acc')
+%if(displayInfos)
     vline(t0,'r--','Burn')
-    vline(tBurnout,'r--','Burnout')
-    vline(topen1,'k','Open1')
-    vline(tclose1,'k','Close1')
-    vline(tApogee,'c--','Apogee')
-    vline(tPara,'g--','Para')
-end
+    vline(tBurnout/1000,'r--','Burnout')
+    vline(tApogee/1000,'b--','Apogee')
+    vline(tPara/1000,'g--','Parachute')
+%end
 set(gca,'fontsize', 16);
 grid on
 
@@ -437,14 +435,20 @@ BrakeIndexes = find(timeMillis>=topen1 & timeMillis<tclose1 | ...
 AirbrakesSignal(BrakeIndexes) = 1;
 
 figure(7)
+yyaxis left
 plot(timeMillis,ayG,'Linewidth',1.5,'DisplayName','Acceleration')
-ylabel('Magnitude [g, -]')
+ylabel('Acceleration [g]')
 xlabel('Time [ms]');
 xlim([minMillis tPara]);
 set(gca,'fontsize', 16);
 grid on
 hold on
-plot(timeMillis, AirbrakesSignal, 'Linewidth',1.5,'DisplayName','Airbrakes Signal')
+plot(timeMillis, AirbrakesSignal,'k', 'Linewidth',1.5,'DisplayName','Airbrakes Signal')
+hold off
+
+yyaxis right
+plot(timeMillisCut(1:end-1),velocityFromAcc(1:end-1),'Linewidth',1.5,'DisplayName','Velocity');
+ylabel('Velocity [m/s^2]')
 legend show
 
 %% Speed from integration of acc VS speed from pitot sensor
@@ -551,9 +555,10 @@ plot(timeMillisCut, ayMS2Cut,'Linewidth',1.5)
 plot(timeMillisCut, velocityFromAcc,'Linewidth',1.5)
 plot(timeMillisCut, altFromAcc,'Linewidth',1.5)
 %plot(timeMillis, speedbaro,'Linewidth',1.5)
-legend('Acc [m/s^2]', 'Velocity [m/s]', 'Altitude [m]')
+legend('Acceleration [m/s^2]', 'Velocity [m/s]', 'Altitude [m]')
 xlabel('Time [ms]');
 xlim([t0 tApogee]);
+ylim([-10 250]);
 set(gca,'fontsize', 16);
 
 %% Speed vs heigh
@@ -568,11 +573,15 @@ RADtoDEG = 180/pi;
 figure ()
 hold on
 grid on
-plot(timeMillisCut,Pitch*RADtoDEG)
-%plot(timeMillisCut,Roll*RADtoDEG)
-plot(timeMillisCut,Yaw*RADtoDEG)
-plot(timeMillisCut,inclination*RADtoDEG)
+plot(timeMillisCut,Pitch*RADtoDEG,'Linewidth',1.5)
+%plot(timeMillisCut,Roll*RADtoDEG,'Linewidth',1.5)
+plot(timeMillisCut,Yaw*RADtoDEG,'Linewidth',1.5)
+plot(timeMillisCut,inclination*RADtoDEG,'Linewidth',1.5)
 legend('Pitch', 'Roll', 'Inclination');
 xlabel('Time [ms]');
 ylabel('Angles [Deg]')
 set(gca,'fontsize', 16);
+vline(t0,'r--','Burn')
+ 
+    vline(7782,'r--','Apogee')
+    

@@ -7,7 +7,7 @@ Fin base length,24e-2
 Fin top length,	12e-2
 Fin Sweep angle,56.3
 Fin thickness, 	3e-2
-Mass,           23.6
+Mass,           17.6
 Ixx,            0.03
 Iyy,            12
 Izz,            12

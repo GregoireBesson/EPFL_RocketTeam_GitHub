@@ -7,12 +7,12 @@ Fin base length,26e-2
 Fin top length,	8e-2
 Fin Sweep angle,45
 Fin thickness, 	1e-2
-Mass,           22.79
-Ixx,            0.07528
-Iyy,            10.224
-Izz,            10.224
-Xcm,            1.567
-Launchpin height, 17e-3
-Launchpin Dia,    30e-3
+Mass,           21.0
+Ixx,            0.0707
+Iyy,            6.815
+Izz,            6.815
+Xcm,            1.593
+Launchpin height, 21e-3
+Launchpin Dia,    16e-3
 Rail angle,       84
-AeroTech_M2400.eng, 0
+AeroTech_M2100.eng, 0

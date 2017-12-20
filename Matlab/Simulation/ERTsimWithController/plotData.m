@@ -1,7 +1,7 @@
 function plotData( clog, roro )
 
  
-    tend = 23.8373;
+    tend = 15;
     t_Burnout = roro.t_Burnout;
     t_RailExit = roro.departureState(2);
     % vel_RailExit = roro.departureState(1);
@@ -19,7 +19,7 @@ function plotData( clog, roro )
     xlabel('Time')
     ylabel('Xdot [m/s]')
     title('Velocity')
-    axis([0 tend 0 340])
+    axis([0 tend 0 300])
     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
 
@@ -28,7 +28,7 @@ function plotData( clog, roro )
     xlabel('Time')
     ylabel('Mass [kg]')
     title('Mass')
-    axis([0 tend 15 25])
+    axis([0 tend 20 30])
     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
 
@@ -62,17 +62,17 @@ function plotData( clog, roro )
     xlabel('Time')
     ylabel('Xcp [m]')
     title('Center of Pressure')
-    axis([0 tend 1.5 2.5])
+    axis([0 tend 1 2])
     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
-    legend([xcp1 xcp2 xcp3],'Barrowman+LiftCorrection','Barrowman')%,'Planform','Location','southwest','Orientation','horizontal')
+    legend([xcp1 xcp2 xcp3],'Barrowman+LiftCorrection','Barrowman','Planform','Location','southwest','Orientation','horizontal')
     % COG
     subplot(3,2,2)
     plot(clog(:,12),clog(:,4))
     xlabel('Time')
     ylabel('Xcm [m]')
     title('Center of Mass')
-    axis([0 tend 1 1.8])
+    axis([0 tend 1 1.7])
     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
     % STABILITY MARGIN
@@ -84,10 +84,10 @@ function plotData( clog, roro )
     xlabel('Time')
     ylabel('Margin []')
     title('Static Stability Margin')
-    axis([0 tend 0 4])
+    axis([0 tend 0 3])
     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
-    legend([ssm1 ssm2], 'Barrowman+LiftCorrection','Barrowman')%,'Location','southwest','Orientation','horizontal')
+    legend([ssm1 ssm2], 'Barrowman+LiftCorrection','Barrowman','Location','southwest','Orientation','horizontal')
     % DAMPING RATIO
     subplot(3,2,4)
     plot(clog(:,12),clog(:,8))
@@ -103,7 +103,7 @@ function plotData( clog, roro )
     xlabel('Time')
     ylabel('Corrective MomentCoeff [N]')
     title('Corrective Moment Coefficient')
-    axis([0 tend 0.0 6000])
+    axis([0 tend 0.0 3500])
     line([t_RailExit t_RailExit],[0 5000],'Color',[0 1 0])
     line([t_Burnout t_Burnout],[0 5000],'Color',[1 0 0])
     % C_DAMPING
@@ -117,15 +117,6 @@ function plotData( clog, roro )
     line([t_Burnout t_Burnout],[0 5000],'Color',[1 0 0])
     
 
-%%
-% hold off
-% figure
-%   plot(clog(:,12),clog(:,2))
-%     xlabel('Time(s)')
-%     ylabel('Cd []')
-%     title('Drag Coefficient')
-%     axis([0 tend 0 1])
-%     line([t_RailExit t_RailExit],[0 300],'Color',[0 1 0])
-%     line([t_Burnout t_Burnout],[0 300],'Color',[1 0 0])
+
 end
 

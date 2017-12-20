@@ -1,9 +1,9 @@
-function logData(alpha, Cd, Cda, Xcm, Mass, Vmag, Xcp, zeta, Ssm, Ssm_B, Ccm, t)
+function logData(alpha, Cd, Cda, Xcm, Mass, Vmag, Xcp, zeta, Ssm, Ssm_B, Ccm, t, acc_z)
 
     global log
 
     %log = [log;[Xdot, Xstab, rad2deg(alpha),t]];
-    log = vertcat(log,[alpha, Cd, Cda, Xcm, Mass, Vmag, Xcp, zeta, Ssm, Ssm_B, Ccm, t]);
+    log = vertcat(log,[alpha, Cd, Cda, Xcm, Mass, Vmag, Xcp, zeta, Ssm, Ssm_B, Ccm, t, acc_z]);
 %     if(t==0)
 %         file1 = fopen('log.dat','w');
 %     else
