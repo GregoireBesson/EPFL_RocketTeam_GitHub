@@ -1,3 +1,4 @@
+%% 1
 function  [t, state] = accent_calc( roro,tend,controller)
 %Function calculates the assent phase of the rocket
     global env;

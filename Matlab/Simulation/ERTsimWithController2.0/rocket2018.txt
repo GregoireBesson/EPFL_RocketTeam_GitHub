@@ -1,0 +1,18 @@
+Lenght,         2.72
+Cone Lenght, 	0.5
+Diameter,       0.12
+Number of Fins, 3
+Fin height, 	9e-2
+Fin base length,24e-2
+Fin top length,	12e-2
+Fin Sweep angle,56.3
+Fin thickness, 	3e-2
+Mass,           23.6
+Ixx,            0.03
+Iyy,            12
+Izz,            12
+Xcm,            1.44
+Launchpin height, 17e-3
+Launchpin Dia,    30e-3
+Rail angle,       90
+Cesaroni_M2020.eng, 0
