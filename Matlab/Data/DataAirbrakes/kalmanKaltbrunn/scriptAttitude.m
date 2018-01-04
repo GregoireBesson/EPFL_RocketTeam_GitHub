@@ -162,8 +162,8 @@ ylabel('Altitude [m]')
 yyaxis right
 varalt = 0.0010 * 8436./(seaLevelhPA * ((1-x(1,1:end-1)/44330).^(5.255)).^.8097);
 0.0010 * 8436./(seaLevelhPA * ((1-3000/44330).^(5.255)).^.8097);
-plot(t, varalt,'--','Linewidth',1,'DisplayName','\sigma_{alt}')
-ylabel('Stand. Dev.')
+plot(t, varalt,'--','Linewidth',1,'DisplayName','var_{alt}')
+ylabel('Sensor Variance [m]')
 ylim([0 1e-2])
 xlabel('Time [s]')
 xlim([0 t(end)]);
@@ -188,8 +188,8 @@ ylabel('Velocity [m/s]')
 ylim([-10 70])
 yyaxis right
 varspeed = 3.4630e+05 * 9./(400*rho*abs(x(2,1:end-1)));
-plot(t, varspeed,'--','Linewidth',1,'DisplayName','\sigma_{vel}')
-ylabel('Stand. Dev.')
+plot(t, varspeed,'--','Linewidth',1,'DisplayName','var_{vel}')
+ylabel('Sensor Variance [m/s]')
 ylim([-1e2 7e2])
 legend show
 %legend('Prediction','Measurment','Correction', 'Vertical Estimator', '\sigma_{vel}')
@@ -211,8 +211,8 @@ hold off
 ylabel('Acceleration [m/s^2]')
 yyaxis right
 varacc = 4.2299e-06 * ones(1,length(t));
-plot(t, varacc,'--','Linewidth',1,'DisplayName','\sigma_{acc}')
-ylabel('Stand. Dev.')
+plot(t, varacc,'--','Linewidth',1,'DisplayName','var_{acc}')
+ylabel('Sensor Variance [m/s^2]')
 ylim([0 .00009])
 legend show
 %legend('Prediction','Measurment','Correction', '\sigma_{acc}')
