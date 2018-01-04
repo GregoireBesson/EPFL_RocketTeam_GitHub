@@ -503,26 +503,26 @@ cutClose = timeMillisCut>tBurnout+290&timeMillisCut<topen1 ...
 figure(10)
 hold on
 grid on
-scatter(velocityFromAcc(cutOpen),ayMS2Cut(cutOpen),'.')
-scatter(velocityFromAcc(cutClose),ayMS2Cut(cutClose),'.')
+scatter(velocityFromAcc(cutOpen),ayMS2Cut(cutOpen),'ro','Linewidth',2)
+scatter(velocityFromAcc(cutClose),ayMS2Cut(cutClose),'bo','Linewidth',2)
 x = min(velocityFromAcc):.01:max(velocityFromAcc);
 
 % second order regression of the opened brakes datapoints
 pOpen = polyfit(velocityFromAcc(cutOpen), ayMS2Cut(cutOpen), 2);
 fOpen = polyval(pOpen,x);
-plot(x,fOpen,'Linewidth',2);
+plot(x,fOpen,'r--','Linewidth',1.5);
 % second order regression of the closed brakes datapoints
 pClose = polyfit(velocityFromAcc(cutClose), ayMS2Cut(cutClose), 2);
 fClose = polyval(pClose,x);
-plot(x,fClose,'Linewidth',2);
+plot(x,fClose,'b--','Linewidth',1.5);
 pOpenNeuch = [-0.00184698786755789 0.00224022570886998 -0.491510493405732];
 fOpenNeuch = polyval(pOpenNeuch,x);
-plot(x,fOpenNeuch,'Linewidth',2);
-title('Drag Acceleration vs speed')
+%plot(x,fOpenNeuch,'Linewidth',2);
+title('Drag acceleration vs velocity')
 ylabel('Acceleration [m/s^2]')
-xlabel('Speed [m/s]');
+xlabel('Veloctity [m/s]');
 hold on
-legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed', 'Sim')
+legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed')
 grid on
 set(gca,'fontsize', 16);
 
