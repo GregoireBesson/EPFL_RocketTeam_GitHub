@@ -5,10 +5,10 @@ close all
 g = 9.81;
 % speed in m/s
 v = 1:10:350;
-% difference between
+% Distance to apogee [m]
 h = 1:10:2500;
 %h = linspace(0,2500,length(v));
-m = 17.6;
+m = 20.6;
 rho = 1.225;
 Aref = pi*(0.12/2)^2;
 factor = (2*m)/(rho*Aref);
@@ -20,14 +20,14 @@ for i=1:length(v)
     end
 end
    
-%%
+%% Plot
 surf(h,v,Cd)
-xlabel('h');
-ylabel('v');
-zlabel('Cd');
-zlim([-2 10]);
-caxis([-2 10]);
-
+xlabel('Distance to apogee [m]');
+ylabel('Velocity [m/s]');
+zlabel('C_d');
+zlim([0 5]);
+caxis([0 5]);
+set(gca,'fontsize', 16);
 
 %% ODE45 
 
