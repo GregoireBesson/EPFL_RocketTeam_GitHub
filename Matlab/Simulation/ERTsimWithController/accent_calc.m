@@ -115,7 +115,7 @@ function  [t, state] = accent_calc( roro,tend,controller)
             % Controller on:
             roro.Cdbrake = controller.Cd(iCd);
             % Controller off:
-            roro.Cdbrake = 0;
+            %roro.Cdbrake = 0;
         end      
         Fthrust = roro.T*RA;
         

@@ -20,7 +20,7 @@ controller = struct;
 controller.table = table;
 controller.v = v;
 controller.Cd = Cd;
-tend = 25;  %simulate 30 seconds
+tend = 22;  %simulate 30 seconds
 [t, state] = accent_calc(roro,tend,controller);
 
 %% Plot the trajectory
@@ -85,7 +85,7 @@ plotData(log, roro);
 %% Save data for Cd Table
 % h07 = h_max - state(1:end-1,3);
 % s07 = state(:,10)/roro.Mass; % P = mv -> v = P/m
-%%
+%% Plot the lookup table values
 figure
 hold on
 grid on
@@ -98,7 +98,8 @@ scatter(controller.table(:,5),controller.v,'.');
 scatter(controller.table(:,6),controller.v,'.');
 scatter(controller.table(:,7),controller.v,'.');
 scatter(controller.table(:,8),controller.v,'.');
-legend('simulator','Cd = 0','Cd = 0.1','Cd = 0.2','Cd = 0.3',...
+legend('Simulator','Cd = 0','Cd = 0.1','Cd = 0.2','Cd = 0.3',...
                    'Cd = 0.4','Cd = 0.5','Cd = 0.6','Cd = 0.7') 
-xlabel('distance to apogee [m]')
-ylabel('speed [m/s]')
+xlabel('Distance to apogee [m]')
+ylabel('Veloctiy [m/s]')
+set(gca,'fontsize', 16);

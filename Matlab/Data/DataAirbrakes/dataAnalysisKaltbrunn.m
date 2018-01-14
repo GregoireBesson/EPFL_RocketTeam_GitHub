@@ -503,8 +503,8 @@ cutClose = timeMillisCut>tBurnout+290&timeMillisCut<topen1 ...
 figure(10)
 hold on
 grid on
-scatter(velocityFromAcc(cutOpen),ayMS2Cut(cutOpen),'ro','Linewidth',2)
-scatter(velocityFromAcc(cutClose),ayMS2Cut(cutClose),'bo','Linewidth',2)
+scatter(velocityFromAcc(cutOpen),ayMS2Cut(cutOpen),'r.','Linewidth',2)
+scatter(velocityFromAcc(cutClose),ayMS2Cut(cutClose),'b.','Linewidth',2)
 x = min(velocityFromAcc):.01:max(velocityFromAcc);
 
 % second order regression of the opened brakes datapoints
@@ -521,6 +521,8 @@ fOpenNeuch = polyval(pOpenNeuch,x);
 title('Drag acceleration vs velocity')
 ylabel('Acceleration [m/s^2]')
 xlabel('Veloctity [m/s]');
+xlim([-40 80]);
+ylim([-8 1]);
 hold on
 legend('open brakes', 'closed brakes', 'least squares open', 'least squares closed')
 grid on
