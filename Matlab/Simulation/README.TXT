@@ -1,12 +1,15 @@
 VERSIONS
 
-ERTsim : first version of the simulator
+- ROROsim : first version of the simulator parametrized for RORO final rocket or Tethys
 
-ERTsimwithcontroller : simulator modified to have a simulated ideal controller (modification of drag coefficient)
+- ERTsim : first version of the simulator parametrized for ERT final rocket
 
-ERTsimwithcontroller2.0 : updated simulator with controller
+- ERTsimwithcontroller : simulator modified to have a simulated ideal controller (modification of drag coefficient)
+                         contains matlab code to fill the lookup table
 
-ERTsim3.0 : updated simulator without controller
+- ERTsimwithcontroller2.0 : updated simulator with controller
+
+- ERTsim3.0 : updated simulator without controller 
 
 
 
